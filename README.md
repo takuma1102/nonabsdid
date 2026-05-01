@@ -5,7 +5,7 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under **non-absorbing** and **binary** treatment.
+`nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins>, binary treatment.
 
 It uses existing estimators and runs existing ones via their
 own packages, then puts their output on the same time axis, the same

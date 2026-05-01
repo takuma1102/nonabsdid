@@ -108,27 +108,28 @@ nabs_event_plot(
 
 ## Working from existing results
 
-If you have already run one or more supported estimators, you do not need to
-rerun the analysis through `nabs_event_study()`. Use `as_nabs_event_study()` to
-convert existing result objects into the common `nabs_event_study_tbl` schema.
+If you have already run supported estimators, you can convert their result
+objects into the common `nabs_event_study_tbl` schema with
+`as_nabs_event_study()`.
 
 ```r
-# One existing estimator object
-tidy_dcdh <- as_nabs_event_study(fit_dcdh, outcome = "y")
+tidy_one <- as_nabs_event_study(fit_dcdh, outcome = "y")
 
-# Several existing estimator objects into one table
 tidy_all <- as_nabs_event_study(
-  list(
-    fit_dcdh,
-    fit_panelmatch,
-    fit_ife,
-    fit_fe,
-    fit_mc
-  ),
+  list(fit_dcdh, fit_panelmatch, fit_ife),
   outcome = "y"
 )
+```
 
-tidy_all
+Results returned by `nabs_event_study()` and `nabs_event_study_simple()` can also
+be passed back to `as_nabs_event_study()`:
+
+```r
+res <- nabs_event_study(...)
+tidy_res <- as_nabs_event_study(res)
+
+res_simple <- nabs_event_study_simple(...)
+tidy_simple <- as_nabs_event_study(res_simple)
 ```
 
 ## Tidy schema

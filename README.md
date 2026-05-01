@@ -1,7 +1,7 @@
 # nonabsdid
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/yourname/nonabsdid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yourname/nonabsdid/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
@@ -30,7 +30,7 @@ correcting against.
 ```r
 # Development version from GitHub:
 # install.packages("pak")
-pak::pak("yourname/nonabsdid")
+pak::pak("takuma1102/nonabsdid")
 ```
 
 The estimator packages themselves (`DIDmultiplegtDYN`, `PanelMatch`,

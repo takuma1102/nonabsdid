@@ -1,0 +1,53 @@
+Package: nonabsdid
+Type: Package
+Title: Heterogeneity-Robust Event Studies for Non-Absorbing Treatments
+Version: 0.1.0
+Authors@R: c(
+    person(given = "First",
+           family = "Last",
+           role = c("aut", "cre"),
+           email = "you@example.com",
+           comment = c(ORCID = "0000-0000-0000-0000"))
+    )
+Description: A unified workflow for estimating, tidying, and visually
+    comparing event-study estimates from heterogeneity-robust
+    difference-in-differences (DiD) estimators that support non-absorbing
+    (switching on/off) binary treatments in staggered panel designs.
+    Wraps the de Chaisemartin and D'Haultfoeuille (DCDH) estimator from
+    'DIDmultiplegtDYN', the matching estimator of Imai, Kim, and Wang from
+    'PanelMatch', and the counterfactual estimators of Liu, Wang, and Xu
+    from 'fect' (with method options "fe", "ife", and "mc"). A single
+    'nabs_event_study()' wrapper runs any supported estimator with a
+    common interface; 'nabs_event_study_simple()' provides a one-line
+    front door for quick exploratory runs; the S3 generic
+    'as_nabs_event_study()' coerces estimator output into a tidy tibble
+    with a stable schema; and 'nabs_event_plot()' overlays multiple
+    methods on a single 'ggplot2' panel, with optional naive two-way
+    fixed effects drawn in a neutral color as a reference.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    dplyr,
+    ggplot2,
+    rlang,
+    stats,
+    tibble
+Suggests:
+    DIDmultiplegtDYN,
+    PanelMatch,
+    fect,
+    fixest,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    vdiffr,
+    withr
+Config/testthat/edition: 3
+RoxygenNote: 7.3.2
+URL: https://github.com/yourname/nonabsdid
+BugReports: https://github.com/yourname/nonabsdid/issues
+VignetteBuilder: knitr

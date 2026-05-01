@@ -5,11 +5,10 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`nonabsdid` is a comparison / post-estimation toolkit for heterogeneity-robust
-difference-in-differences with **non-absorbing**, **binary**, **staggered**
-treatment.
+`nonabsdid` is an R package to perform comparison and post-estimation for heterogeneity-robust
+staggered DiD with **non-absorbing** and **binary** treatment.
 
-It does **not** invent new estimators. It runs existing ones via their
+It uses existing estimators and runs existing ones via their
 own packages, then puts their output on the same time axis, the same
 tidy schema, and the same ggplot2 panel so you can compare them at a glance.
 

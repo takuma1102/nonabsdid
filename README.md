@@ -7,9 +7,9 @@
 
 `nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins>, binary treatment.
 
-It uses existing estimators and runs existing ones via their
+It covers existing multiple estimators and runs ones via their
 own packages, then puts their output on the same time axis, the same
-tidy schema, and the same ggplot2 panel so you can compare them at a glance.
+tidy schema, and the same `ggplot2` panel so you can compare them at a glance.
 
 Supported estimators:
 
@@ -36,11 +36,13 @@ The estimator packages themselves (`DIDmultiplegtDYN`, `PanelMatch`,
 `fect`, `fixest`) are listed in `Suggests`, so install only the ones you
 plan to use.
 
-## The 30-second version
+## First-pass exploratory analysis
 
-For a first look at your data, use `nabs_event_study_simple()`. It runs
-the heterogeneity-robust estimators with reasonable defaults, fits a TWFE
-reference, and gives you a single overlay plot to inspect:
+At the early stage of an analysis, use `nabs_event_study_simple()` to get
+an initial sense of how the event-study estimates look across estimators.
+It runs the heterogeneity-robust estimators with reasonable defaults, fits
+a naive TWFE reference, and gives you a single overlay plot to inspect
+before moving on to estimator-specific tuning and robustness checks.
 
 ```r
 library(nonabsdid)
@@ -104,6 +106,31 @@ nabs_event_plot(
   xlim = c(-6, 8), ylim = c(-2, 2),
   ylab = "Effect on outcome"
 )
+```
+
+## Working from existing results
+
+If you have already run one or more supported estimators, you do not need to
+rerun the analysis through `nabs_event_study()`. Use `as_nabs_event_study()` to
+convert existing result objects into the common `nabs_event_study_tbl` schema.
+
+```r
+# One existing estimator object
+tidy_dcdh <- as_nabs_event_study(fit_dcdh, outcome = "y")
+
+# Several existing estimator objects into one table
+tidy_all <- as_nabs_event_study(
+  list(
+    fit_dcdh,
+    fit_panelmatch,
+    fit_ife,
+    fit_fe,
+    fit_mc
+  ),
+  outcome = "y"
+)
+
+tidy_all
 ```
 
 ## Tidy schema

@@ -17,6 +17,10 @@ test_that("naive_twfe runs end-to-end on a small synthetic panel", {
 
   expect_s3_class(out, "nabs_event_study_tbl")
   expect_equal(unique(out$method), "TWFE")
+
+  fit <- attr(out, "fit")
+  expect_equal(stats::nobs(fit), nrow(d))
+  
   # Reference period should be present at -1 with estimate exactly 0.
   expect_true(any(out$time == -1L))
   expect_equal(out$estimate[out$time == -1L], 0)

@@ -63,8 +63,6 @@ res$fits       # the native estimator objects, for diagnostics
 
 If a particular estimator's package is not installed, that estimator is
 skipped with a message, and the remaining methods still produce output.
-This is intentional: `_simple()` is for getting *something* to look at
-even when your environment isn't fully provisioned.
 
 ## Careful runs
 
@@ -155,7 +153,7 @@ plotting code keeps working.
 
 ## Status
 
-This package is **experimental**. The output schema is intended to be stable,
+This package is experimental. The output schema is intended to be stable,
 but the upstream estimator packages occasionally rearrange their internal
 structures, so please pin versions in production code.
 

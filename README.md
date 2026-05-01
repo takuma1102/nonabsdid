@@ -7,7 +7,7 @@
 
 `nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment.
 
-It covers existing multiple estimators and runs ones via their
+It covers existing multiple estimators and runs analysis via their
 own packages, then puts their output on the same time axis, the same
 tidy schema, and the same `ggplot2` panel so you can compare them at a glance.
 
@@ -33,7 +33,7 @@ pak::pak("takuma1102/nonabsdid")
 ```
 
 The estimator packages themselves (`DIDmultiplegtDYN`, `PanelMatch`,
-`fect`, `fixest`) are listed in `Suggests`, so install only the ones you
+`fect`, `fixest`) are listed in `Suggests`, so install the ones you
 plan to use.
 
 ## First-pass exploratory analysis

@@ -101,10 +101,10 @@ nabs_event_plot <- function(...,
       ) +
       ggplot2::geom_line(
         data = reference,
-        ggplot2::aes(x = .data$time, y = .data$estimate, group = 1L),
+        ggplot2::aes(x = .data$time, y = .data$estimate, group = 1L,
+                     linetype = "TWFE (naive)"),
         inherit.aes = FALSE,
         color = reference_color,
-        linetype = "dashed",
         alpha = 0.7
       ) +
       ggplot2::geom_point(
@@ -139,6 +139,10 @@ nabs_event_plot <- function(...,
     ggplot2::scale_shape_manual(
       name   = NULL,
       values = c("pre" = 16L, "post" = 17L)
+    ) +
+    ggplot2::scale_linetype_manual(
+      name   = NULL,
+      values = c("TWFE (naive)" = "dashed")
     ) +
     ggplot2::guides(shape = "none") +
     ggplot2::labs(x = xlab, y = ylab) +

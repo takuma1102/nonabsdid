@@ -186,8 +186,4 @@ If you use `nonabsdid` in your work, please kindly cite the package:
 > Studies with Non-Absorbing Binary Treatments*. R package version X.Y.Z.
 > https://github.com/takuma1102/nonabsdid
 
-Please also cite whichever underlying estimator(s) you actually used:
-
-- de Chaisemartin & D'Haultfœuille (2024) "Difference-in-Differences Estimators of Intertemporal Treatment Effects."
-- Imai, Kim, & Wang (2023) "Matching Methods for Causal Inference with Time-Series Cross-Sectional Data." *AJPS*.
-- Liu, Wang, & Xu (2024) "A Practical Guide to Counterfactual Estimators for Causal Inference with Time-Series Cross-Sectional Data." *AJPS*.
+Please also cite whichever underlying estimator(s) you actually used.

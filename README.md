@@ -32,6 +32,14 @@ correcting against.
 pak::pak("takuma1102/nonabsdid")
 ```
 
+You can install this package through r-universe.
+```r
+install.packages(
+  "nonabsdid",
+  repos = c("https://takuma1102.r-universe.dev", getOption("repos"))
+)
+```
+
 The estimator packages themselves (`DIDmultiplegtDYN`, `PanelMatch`,
 `fect`, `fixest`) are listed in `Suggests`, so install the ones you
 plan to use.

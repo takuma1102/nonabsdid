@@ -188,6 +188,6 @@ If you use `nonabsdid` in your work, please kindly cite the package:
 
 Please also cite whichever underlying estimator(s) you actually used.
 
-- de Chaisemartin & D'Haultfœuille (2024) "Difference-in-Differences Estimators of Intertemporal Treatment Effects."
+- de Chaisemartin, C., & D'Haultfœuille, X. (2026). "Difference-in-Differences Estimators of Intertemporal Treatment Effects." Review of Economics and Statistics.
 - Imai, Kim, & Wang (2023) "Matching Methods for Causal Inference with Time-Series Cross-Sectional Data." *AJPS*.
 - Liu, Wang, & Xu (2024) "A Practical Guide to Counterfactual Estimators for Causal Inference with Time-Series Cross-Sectional Data." *AJPS*.

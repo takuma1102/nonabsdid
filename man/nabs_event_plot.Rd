@@ -44,7 +44,7 @@ Overlays event-study estimates from any combination of supported estimators
 on a single \code{ggplot2} panel.
 }
 \examples{
-\dontrun{
+\donttest{
 nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
            reference = naive_twfe_tidy,
            xlim = c(-6, 6))

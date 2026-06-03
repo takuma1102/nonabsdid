@@ -21,10 +21,6 @@ Supported estimators:
     - `FE`  (two-way fixed-effects imputation)
     - `MC`  (matrix completion)
 
-Plus an optional **naive TWFE reference series** (via `fixest`) drawn in a
-neutral color so you can see what the heterogeneity-robust estimators are
-correcting against.
-
 > **Note:** The DCDH estimator depends on `DIDmultiplegtDYN`, which in turn
 > requires `polars`. `polars` is not on CRAN, so install it from R-multiverse:
 >
@@ -33,6 +29,10 @@ correcting against.
 > install.packages("polars",
 >   repos = c("https://community.r-multiverse.org", "https://cloud.r-project.org"))
 > ```
+
+Plus an optional **naive TWFE reference series** (via `fixest`) drawn in a
+neutral color so you can see what the heterogeneity-robust estimators are
+correcting against.
 
 ## Installation
 

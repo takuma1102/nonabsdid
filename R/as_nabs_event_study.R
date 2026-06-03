@@ -25,7 +25,7 @@
 #'   period and the columns documented in the package overview.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   fit <- DIDmultiplegtDYN::did_multiplegt_dyn(
 #'     df = mydata, outcome = "y", group = "id", time = "t",
 #'     treatment = "d", effects = 6, placebo = 4

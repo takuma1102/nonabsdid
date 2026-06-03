@@ -3,6 +3,8 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![r-universe version](https://takuma1102.r-universe.dev/nonabsdid/badges/version)](https://takuma1102.r-universe.dev/nonabsdid)
+[![r-universe status](https://takuma1102.r-universe.dev/badges/nonabsdid)](https://takuma1102.r-universe.dev/nonabsdid)
 <!-- badges: end -->
 
 `nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment.

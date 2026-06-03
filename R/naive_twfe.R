@@ -159,14 +159,14 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
   )
 
   # Construct the fixest formula.
-  # Include -1 in keep; ref = -1 will drop it.
-  event_times <- sort(unique(c(
-    -1L,
-    seq.int(from = -lags, to = leads)
-  )))
-
-  keep_expr <- paste0("c(", paste(event_times, collapse = ", "), ")")
-
+  #
+  # IMPORTANT: estimate dummies for *all* event times; do NOT use fixest's
+  # `keep=` to restrict the window here. Restricting with `keep=` would leave
+  # the out-of-window treated observations in the sample, where they get
+  # absorbed into the reference category (-1) and bias every coefficient by a
+  # roughly constant amount. Estimating all event-time dummies keeps the
+  # reference period clean; the requested [-lags, leads] window is applied
+  # afterwards, by trimming the tidy output.
   ctrl_part <- if (length(controls)) {
     paste(" + ", paste(backtick_name(controls), collapse = " + "))
   } else {
@@ -174,8 +174,7 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
   }
 
   rhs <- sprintf(
-    "i(time_to_event, .__nabs_ever, ref = -1, keep = %s)%s",
-    keep_expr,
+    "i(time_to_event, .__nabs_ever, ref = -1)%s",
     ctrl_part
   )
 
@@ -199,6 +198,16 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
     outcome = outcome,
     conf.level = conf.level
   )
+
+  # Trim to the requested [-lags, leads] window. Coefficients are estimated
+  # for all event times (to keep the reference period uncontaminated), so the
+  # windowing happens here. Preserve the tibble's class and attributes, which
+  # `[` would otherwise drop.
+  cls <- class(out)
+  cl  <- attr(out, "conf.level")
+  out <- out[out$time >= -lags & out$time <= leads, , drop = FALSE]
+  class(out) <- cls
+  attr(out, "conf.level") <- cl
 
   attr(out, "fit") <- fit
 

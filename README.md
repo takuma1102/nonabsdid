@@ -180,8 +180,6 @@ structures, so please pin versions in production code.
 
 ## Citation
 
-## Citation
-
 If you use `nonabsdid` in your work, please kindly cite the package:
 
 > Takuma Iwasaki (2026). *nonabsdid: Heterogeneity-Robust DID Event

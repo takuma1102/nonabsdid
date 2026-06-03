@@ -43,7 +43,7 @@
 #' what makes it useful as a visual baseline.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   ref <- naive_twfe(mydata, outcome = "y", treatment = "d",
 #'                     unit = "id", time = "t",
 #'                     lags = 12, leads = 6)

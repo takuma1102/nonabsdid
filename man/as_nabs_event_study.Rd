@@ -70,7 +70,7 @@ Extracts coefficients on \code{time_to_event} interactions
 }
 }
 \examples{
-\donttest{
+\dontrun{
 fit <- DIDmultiplegtDYN::did_multiplegt_dyn(
   df = mydata, outcome = "y", group = "id", time = "t",
   treatment = "d", effects = 6, placebo = 4

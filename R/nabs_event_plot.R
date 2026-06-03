@@ -85,33 +85,31 @@ nabs_event_plot <- function(...,
   )
 
   # Reference series (drawn first so it sits underneath).
+   # Reference series (drawn first so it sits underneath).
   if (!is.null(reference)) {
     if (!inherits(reference, "nabs_event_study_tbl")) {
       reference <- as_nabs_event_study(reference)
     }
+    # 参照系列に凡例キーを与える(通常 "TWFE")
+    ref_key <- paste(unique(reference$method), collapse = "/")
+    pal  <- c(pal,  stats::setNames(reference_color, ref_key))
+    lbls <- c(lbls, stats::setNames(paste0(ref_key, " (naive)"), ref_key))
+
     p <- p +
       ggplot2::geom_errorbar(
         data = reference,
         ggplot2::aes(x = .data$time,
-                     ymin = .data$conf.low, ymax = .data$conf.high),
+                     ymin = .data$conf.low, ymax = .data$conf.high,
+                     color = ref_key),
         inherit.aes = FALSE,
-        color = reference_color,
         width = errorbar_width,
         alpha = 0.55
       ) +
-      ggplot2::geom_line(
-        data = reference,
-        ggplot2::aes(x = .data$time, y = .data$estimate, group = 1L,
-                     linetype = "TWFE (naive)"),
-        inherit.aes = FALSE,
-        color = reference_color,
-        alpha = 0.7
-      ) +
       ggplot2::geom_point(
         data = reference,
-        ggplot2::aes(x = .data$time, y = .data$estimate),
+        ggplot2::aes(x = .data$time, y = .data$estimate,
+                     color = ref_key),
         inherit.aes = FALSE,
-        color = reference_color,
         size = point_size * 0.8,
         alpha = 0.8
       )

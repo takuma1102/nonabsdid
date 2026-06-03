@@ -33,7 +33,7 @@
 #' @return A `ggplot` object.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   p <- nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
 #'                   reference = naive_twfe_tidy,
 #'                   xlim = c(-6, 6),

@@ -52,7 +52,7 @@ silently skipped. Errors from a single estimator are caught and reported
 as a warning; the remaining estimators continue.
 }
 \examples{
-\donttest{
+\dontrun{
 res <- nabs_event_study_simple(
   mydata,
   outcome   = "y",

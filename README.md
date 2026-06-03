@@ -1,4 +1,4 @@
-# nonabsdid: Heterogeneity-Robust DID Event Studies with Non-Absorbing Binary Treatments
+# *nonabsdid*: Heterogeneity-Robust DID Event Studies with Non-Absorbing Binary Treatments
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml)

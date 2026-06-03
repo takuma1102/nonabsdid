@@ -26,7 +26,6 @@ Description: A unified workflow for estimating, tidying, and visually
     fixed effects drawn in a neutral color as a reference.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends:
     R (>= 4.1.0)
 Imports:

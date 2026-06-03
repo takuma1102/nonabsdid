@@ -8,6 +8,8 @@
 
 `nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment.
 
+![Comparison of heterogeneity-robust estimators vs naive TWFE](README_example_plot.png)
+
 It covers existing multiple estimators and runs analysis via their
 own packages, then puts their output on the same time axis, the same
 tidy schema, and the same `ggplot2` panel so you can compare them at a glance.

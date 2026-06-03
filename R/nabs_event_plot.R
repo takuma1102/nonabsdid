@@ -22,7 +22,9 @@
 #' @param xlim,ylim Numeric length-2 vectors for axis limits. `NULL` lets
 #'   ggplot2 choose.
 #' @param dodge Width of the position-dodge applied to points and error
-#'   bars. Default `0.5`.
+#'   bars. The `reference` series shares this dodge with the main series, so
+#'   all series (including the naive TWFE reference) get their own
+#'   evenly-spaced horizontal slot and their CIs do not overlap. Default `0.5`.
 #' @param point_size,errorbar_width Aesthetic controls for the geom layers.
 #' @param show_pre_post_legend Logical. If `TRUE`, the legend keys are
 #'   labeled `"<method>; pre"` / `"<method>; post"`. If `FALSE`, only one
@@ -63,9 +65,34 @@ nabs_event_plot <- function(...,
   }
 
   df <- bind_event_studies(series)
-  df$key <- paste(df$method, df$window, sep = "_")
+  df$key  <- paste(df$method, df$window, sep = "_")
+  df$role <- "main"          # used to give the reference a lighter look
+  df$shp  <- df$window       # circle for pre, triangle for post
 
+  # Resolve the palette on the main series only (before the reference is
+  # folded in), so resolve_palette() doesn't warn about a missing key.
   pal <- resolve_palette(palette, df)
+
+  # Fold the reference (e.g. naive TWFE) into the SAME data frame so it shares
+  # the position_dodge with the main series. Drawn as its own layer it would
+  # only see one group and stay centred on the integer x -- which is exactly
+  # why it used to overlap the centre series (IFE). Sharing the dodge gives it
+  # its own evenly-spaced slot.
+  ref_key <- NULL
+  if (!is.null(reference)) {
+    if (!inherits(reference, "nabs_event_study_tbl")) {
+      reference <- as_nabs_event_study(reference)
+    }
+    ref_key <- paste(unique(reference$method), collapse = "/")
+    reference$key  <- ref_key
+    reference$role <- "ref"
+    reference$shp  <- "ref"   # keep the reference as circles in every period
+    pal <- c(pal, stats::setNames(reference_color, ref_key))
+
+    common <- intersect(names(df), names(reference))
+    df <- dplyr::bind_rows(df[, common, drop = FALSE],
+                           reference[, common, drop = FALSE])
+  }
 
   # Build labels for legend (e.g. "DCDH; pre" or just "DCDH").
   if (isTRUE(show_pre_post_legend)) {
@@ -77,53 +104,27 @@ nabs_event_plot <- function(...,
     label_for <- function(k) strsplit(k, "_", fixed = TRUE)[[1]][1]
   }
   lbls <- vapply(names(pal), label_for, character(1))
+  if (!is.null(ref_key)) {
+    lbls[ref_key] <- paste0(ref_key, " (naive)")
+  }
 
   p <- ggplot2::ggplot(
     df,
     ggplot2::aes(x = .data$time, y = .data$estimate,
-                 color = .data$key, shape = .data$window)
+                 color = .data$key, shape = .data$shp,
+                 group = .data$key)   # group == key => one dodge slot per series
   )
-
-  # Reference series (drawn first so it sits underneath).
-   # Reference series (drawn first so it sits underneath).
-  if (!is.null(reference)) {
-    if (!inherits(reference, "nabs_event_study_tbl")) {
-      reference <- as_nabs_event_study(reference)
-    }
-
-    ref_key <- paste(unique(reference$method), collapse = "/")
-    pal  <- c(pal,  stats::setNames(reference_color, ref_key))
-    lbls <- c(lbls, stats::setNames(paste0(ref_key, " (naive)"), ref_key))
-
-    p <- p +
-      ggplot2::geom_errorbar(
-        data = reference,
-        ggplot2::aes(x = .data$time,
-                     ymin = .data$conf.low, ymax = .data$conf.high,
-                     color = ref_key),
-        inherit.aes = FALSE,
-        width = errorbar_width,
-        alpha = 0.55
-      ) +
-      ggplot2::geom_point(
-        data = reference,
-        ggplot2::aes(x = .data$time, y = .data$estimate,
-                     color = ref_key),
-        inherit.aes = FALSE,
-        size = point_size * 0.8,
-        alpha = 0.8
-      )
-  }
 
   p <- p +
     ggplot2::geom_errorbar(
-      ggplot2::aes(ymin = .data$conf.low, ymax = .data$conf.high),
+      ggplot2::aes(ymin = .data$conf.low, ymax = .data$conf.high,
+                   alpha = .data$role),
       width = errorbar_width,
       linewidth = 0.8,
       position = ggplot2::position_dodge(width = dodge)
     ) +
     ggplot2::geom_point(
-      size = point_size,
+      ggplot2::aes(alpha = .data$role, size = .data$role),
       position = ggplot2::position_dodge(width = dodge)
     ) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
@@ -136,11 +137,15 @@ nabs_event_plot <- function(...,
     ) +
     ggplot2::scale_shape_manual(
       name   = NULL,
-      values = c("pre" = 16L, "post" = 17L)
+      values = c("pre" = 16L, "post" = 17L, "ref" = 16L)
     ) +
-    ggplot2::scale_linetype_manual(
-      name   = NULL,
-      values = c("TWFE (naive)" = "dashed")
+    ggplot2::scale_alpha_manual(
+      values = c("main" = 1, "ref" = 0.7),
+      guide  = "none"
+    ) +
+    ggplot2::scale_size_manual(
+      values = c("main" = point_size, "ref" = point_size * 0.85),
+      guide  = "none"
     ) +
     ggplot2::guides(shape = "none") +
     ggplot2::labs(x = xlab, y = ylab) +

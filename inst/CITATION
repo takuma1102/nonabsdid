@@ -1,0 +1,21 @@
+citHeader("To cite the 'nonabsdid' package in publications, please cite the",
+          "package itself. Because 'nonabsdid' is a wrapper around existing",
+          "estimators, please ALSO cite whichever underlying estimator(s) you",
+          "actually used.")
+
+## meta is auto-populated from the DESCRIPTION file at install time, so the
+## version and year stay in sync with the package automatically.
+note <- sprintf("R package version %s", meta$Version)
+year <- sub("-.*", "", meta$Date)
+if (length(year) == 0L || is.na(year) || year == "") {
+  year <- format(Sys.Date(), "%Y")
+}
+
+bibentry(
+  bibtype  = "Manual",
+  title    = "{nonabsdid}: Heterogeneity-Robust DID Event Studies with Non-Absorbing Binary Treatments",
+  author   = person(given = "Takuma", family = "Iwasaki"),
+  year     = year,
+  note     = note,
+  url      = "https://github.com/takuma1102/nonabsdid"
+)

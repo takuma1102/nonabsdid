@@ -43,6 +43,7 @@
 #' }
 #'
 #' @keywords internal
+#' @importFrom rlang .data
 "_PACKAGE"
 
 # Suppress R CMD check NOTEs about NSE column names used inside ggplot / dplyr.

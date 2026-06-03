@@ -21,16 +21,18 @@ test_that("nabs_event_plot accepts a single list of tibbles", {
   expect_s3_class(g, "ggplot")
 })
 
-test_that("nabs_event_plot draws a reference layer when provided", {
+test_that("nabs_event_plot includes the reference series when provided", {
   skip_if_not_installed("ggplot2")
   d <- make_tbl("DCDH", -2:2, c(0, 0, 0, 0.5, 0.6))
   ref <- make_tbl("TWFE", -2:2, c(0.1, 0.05, 0, 0.7, 0.9))
   g <- nabs_event_plot(d, reference = ref)
   expect_s3_class(g, "ggplot")
-  # Reference adds 3 extra layers (errorbar + line + point) before the
-  # main 2 (errorbar + point) and the reference lines (hline + vline).
-  # We won't pin the exact count, but >= 5.
-  expect_gte(length(g$layers), 5L)
+  # The reference is folded into the same position-dodged layers as the main
+  # series (so it gets its own horizontal slot instead of sitting on top of
+  # the centre series), rather than being drawn as separate layers. Verify
+  # its rows are part of the plot data and that the plot still builds.
+  expect_true("TWFE" %in% g$data$method)
+  expect_no_error(ggplot2::ggplot_build(g))
 })
 
 test_that("nabs_event_plot warns and fills in missing palette entries", {

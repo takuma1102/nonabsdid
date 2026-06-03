@@ -31,7 +31,7 @@
 #'   }
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   res_dcdh <- nabs_event_study(mydata, outcome = "y", treatment = "d",
 #'                            unit = "id", time = "t",
 #'                            method = "DCDH",

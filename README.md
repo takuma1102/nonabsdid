@@ -25,6 +25,15 @@ Plus an optional **naive TWFE reference series** (via `fixest`) drawn in a
 neutral color so you can see what the heterogeneity-robust estimators are
 correcting against.
 
+> **Note:** The DCDH estimator depends on `DIDmultiplegtDYN`, which in turn
+> requires `polars`. `polars` is not on CRAN, so install it from R-multiverse:
+>
+> ```r
+> Sys.setenv(NOT_CRAN = "true")
+> install.packages("polars",
+>   repos = c("https://community.r-multiverse.org", "https://cloud.r-project.org"))
+> ```
+
 ## Installation
 
 ```r

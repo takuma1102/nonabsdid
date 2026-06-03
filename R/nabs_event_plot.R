@@ -90,7 +90,7 @@ nabs_event_plot <- function(...,
     if (!inherits(reference, "nabs_event_study_tbl")) {
       reference <- as_nabs_event_study(reference)
     }
-    # 参照系列に凡例キーを与える(通常 "TWFE")
+
     ref_key <- paste(unique(reference$method), collapse = "/")
     pal  <- c(pal,  stats::setNames(reference_color, ref_key))
     lbls <- c(lbls, stats::setNames(paste0(ref_key, " (naive)"), ref_key))

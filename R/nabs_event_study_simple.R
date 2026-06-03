@@ -56,7 +56,7 @@
 #' as a warning, and the remaining estimators continue.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   # Minimal call -- runs DCDH + PanelMatch + IFE + naive TWFE,
 #'   # returns the figure and the tidy data.
 #'   res <- nabs_event_study_simple(

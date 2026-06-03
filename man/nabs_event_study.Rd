@@ -39,7 +39,7 @@ A thin wrapper around the three supported estimators that takes a single,
 common argument set and dispatches to the correct underlying package.
 }
 \examples{
-\donttest{
+\dontrun{
 res <- nabs_event_study(mydata, outcome = "y", treatment = "d",
                    unit = "id", time = "t",
                    method = "DCDH",

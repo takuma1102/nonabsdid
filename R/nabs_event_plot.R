@@ -367,8 +367,7 @@ resolve_shapes <- function(shapes, keys, ref_key) {
 
   known <- intersect(names(base), names(vals))
   vals[known] <- base[known]
-  if (!is.null(ref_key)) vals[[ref_key]] <- 1L     # open circle = reference
-
+  if (!is.null(ref_key)) vals[[ref_key]] <- 16L    
   miss <- names(vals)[is.na(vals)]
   if (length(miss)) {
     spares <- setdiff(c(16L, 17L, 15L, 18L, 8L, 7L, 3L, 4L, 5L, 6L, 9L, 10L),

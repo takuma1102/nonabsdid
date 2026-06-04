@@ -42,12 +42,16 @@
 #' where DCDH / PanelMatch / IFE differ from it -- which is precisely
 #' what makes it useful as a visual baseline.
 #'
-#' @examples
-#' \dontrun{
-#'   ref <- naive_twfe(mydata, outcome = "y", treatment = "d",
+#' @examplesIf requireNamespace("fixest", quietly = TRUE)
+#' \donttest{
+#'   set.seed(1)
+#'   panel <- expand.grid(id = 1:40, t = 1:10)
+#'   panel$d <- rbinom(nrow(panel), 1, 0.3)
+#'   panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
+#'   ref <- naive_twfe(panel, outcome = "y", treatment = "d",
 #'                     unit = "id", time = "t",
-#'                     lags = 12, leads = 6)
-#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy, reference = ref)
+#'                     lags = 3, leads = 3)
+#'   ref
 #' }
 #' @export
 naive_twfe <- function(data, outcome, treatment, unit, time,

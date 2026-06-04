@@ -6,16 +6,66 @@
 \alias{nonabsdid-package}
 \title{nonabsdid: Side-by-Side Event-Study Comparison for Heterogeneous DiD}
 \description{
-Unified workflow for estimating, tidying, and visually comparing event-study
-estimates from heterogeneity-robust DiD estimators that allow non-absorbing
-treatment (DCDH, PanelMatch, IFE/fect), with optional naive TWFE reference.
+The `nonabsdid` package provides a single, consistent interface for
+running, tidying, and plotting event-study estimates from several
+heterogeneity-robust difference-in-differences estimators that support
+non-absorbing (switching on/off) treatments:
 }
 \details{
-The user-facing API has three pieces:
 \itemize{
-  \item \code{\link[=nabs_event_study]{nabs_event_study()}} -- run an estimator with a unified interface.
-  \item \code{\link[=as_nabs_event_study]{as_nabs_event_study()}} -- coerce native objects to a tidy tibble.
-  \item \code{\link[=nabs_event_plot]{nabs_event_plot()}} -- overlay tibbles on a single ggplot2 panel.
+  \item **DCDH** --- de Chaisemartin & D'Haultfoeuille, via
+    `DIDmultiplegtDYN::did_multiplegt_dyn()`.
+  \item **PanelMatch** --- Imai, Kim & Wang, via
+    `PanelMatch::PanelMatch()` / `PanelMatch::PanelEstimate()` with
+    pre-treatment results from `PanelMatch::placebo_test()`.
+  \item **IFE / Imputation** --- Liu, Wang & Xu, via `fect::fect()`.
 }
+
+The user-facing API has three pieces:
+
+\itemize{
+  \item [nabs_event_study()] runs one of the estimators with a unified argument
+    set and returns its native object plus a tidy tibble.
+  \item [as_nabs_event_study()] is an S3 generic that coerces native estimator
+    objects into a stable tidy tibble (the *nabs_event_study_tbl* schema).
+  \item [nabs_event_plot()] takes one or more *nabs_event_study_tbl* objects and
+    overlays them on a single ggplot2 panel, optionally with a naive
+    two-way fixed effects (TWFE) reference series in a neutral color.
+}
+}
+\section{Tidy schema}{
+
+All tidiers return a tibble with class `c("nabs_event_study_tbl", "tbl_df", ...)`
+and the following columns:
+\describe{
+  \item{`time`}{Integer relative period (0 = treatment onset).}
+  \item{`estimate`}{Point estimate.}
+  \item{`std.error`}{Standard error (may be `NA` when the estimator only
+    reports CI bounds, e.g. some `fect` configurations).}
+  \item{`conf.low`, `conf.high`}{Lower / upper bound of the
+    `conf.level` confidence interval.}
+  \item{`window`}{`"pre"` if `time < 0`, otherwise `"post"`.}
+  \item{`method`}{Method label, e.g. `"DCDH"`, `"PanelMatch"`,
+    `"IFE"`, or `"TWFE"`.}
+  \item{`outcome`}{Outcome variable name (when known), else `NA`.}
+}
+}
+
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/takuma1102/nonabsdid}
+  \item Report bugs at \url{https://github.com/takuma1102/nonabsdid/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Takuma Iwasaki \email{iwasakit@stanford.edu} (\href{https://orcid.org/0009-0000-8782-4851}{ORCID})
+
+Authors:
+\itemize{
+  \item Takuma Iwasaki \email{iwasakit@stanford.edu} (\href{https://orcid.org/0009-0000-8782-4851}{ORCID})
+}
+
 }
 \keyword{internal}

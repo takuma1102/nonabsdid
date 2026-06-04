@@ -4,46 +4,74 @@
 \alias{nabs_event_study}
 \title{Run an event-study estimator with a unified interface}
 \usage{
-nabs_event_study(data, outcome, treatment, unit, time,
-            method = c("DCDH", "PanelMatch", "IFE", "FE", "MC"),
-            lags = 6L, leads = 8L,
-            controls = NULL, cluster = unit,
-            conf.level = 0.95, ...)
+nabs_event_study(
+  data,
+  outcome,
+  treatment,
+  unit,
+  time,
+  method = c("DCDH", "PanelMatch", "IFE", "FE", "MC"),
+  lags = 6L,
+  leads = 8L,
+  controls = NULL,
+  cluster = unit,
+  conf.level = 0.95,
+  ...
+)
 }
 \arguments{
 \item{data}{A panel data frame.}
 
 \item{outcome, treatment, unit, time}{Character column names.}
 
-\item{method}{One of \code{"DCDH"}, \code{"PanelMatch"}, \code{"IFE"},
-\code{"FE"}, or \code{"MC"}. The latter three all dispatch through
-\code{fect::fect()}, with \code{method = "ife"}, \code{"fe"}, or
-\code{"mc"} respectively.}
+\item{method}{One of `"DCDH"`, `"PanelMatch"`, `"IFE"`.}
 
 \item{lags, leads}{Integer pre- and post-period lengths.}
 
 \item{controls}{Optional character vector of covariate names.}
 
-\item{cluster}{Character; cluster variable. Defaults to \code{unit}.}
+\item{cluster}{Character; cluster variable. Defaults to `unit`.}
 
 \item{conf.level}{Confidence level for the tidied output. Default 0.95.}
 
-\item{...}{Extra arguments passed to the underlying estimator.}
+\item{...}{Extra arguments passed straight to the underlying estimator.}
 }
 \value{
-A list of class \code{"nabs_event_study_result"} with \code{tidy}, \code{fit}, and
-\code{call} elements.
+A list of class `"nabs_event_study_result"` with elements:
+  \describe{
+    \item{`tidy`}{An `nabs_event_study_tbl`.}
+    \item{`fit`}{The native estimator object (for diagnostics).}
+    \item{`call`}{The call that produced it.}
+  }
 }
 \description{
-A thin wrapper around the three supported estimators that takes a single,
-common argument set and dispatches to the correct underlying package.
+`nabs_event_study()` is a thin wrapper around the three supported estimators
+(DCDH, PanelMatch, IFE/fect) that takes a single, common argument set
+and dispatches to the correct underlying package. It is **not** intended
+to expose every option of every estimator; for that, call the underlying
+packages directly and tidy their output with [as_nabs_event_study()].
+}
+\details{
+What it does cover:
+\itemize{
+  \item Variable names (outcome, treatment, unit, time),
+  \item Pre/post window length (`lags`, `leads`),
+  \item Optional covariates and clustering,
+  \item Reasonable defaults that match the three packages' typical use.
+}
 }
 \examples{
-\dontrun{
-res <- nabs_event_study(mydata, outcome = "y", treatment = "d",
-                   unit = "id", time = "t",
-                   method = "DCDH",
-                   lags = 6, leads = 8)
-res$tidy
+\dontshow{if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\donttest{
+  set.seed(1)
+  panel <- expand.grid(id = 1:40, t = 1:10)
+  panel$d <- rbinom(nrow(panel), 1, 0.3)
+  panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
+  res_dcdh <- nabs_event_study(panel, outcome = "y", treatment = "d",
+                               unit = "id", time = "t",
+                               method = "DCDH",
+                               lags = 2, leads = 3)
+  res_dcdh$tidy
 }
+\dontshow{\}) # examplesIf}
 }

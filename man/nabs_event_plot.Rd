@@ -4,73 +4,114 @@
 \alias{nabs_event_plot}
 \title{Plot one or more event-study tibbles on a single panel}
 \usage{
-nabs_event_plot(..., style = c("prepost_color", "method_shape"),
-           connect = FALSE, connect_linewidth = 0.4,
-           reference = NULL, reference_color = "grey20",
-           palette = "default", xlim = NULL, ylim = NULL,
-           dodge = 0.5, point_size = 2.5, errorbar_width = 0.1,
-           show_pre_post_legend = TRUE,
-           xlab = "Relative time to treatment change",
-           ylab = "Estimated effect", base_size = 11)
+nabs_event_plot(
+  ...,
+  style = c("prepost_color", "method_shape"),
+  connect = FALSE,
+  connect_linewidth = 0.4,
+  reference = NULL,
+  reference_color = "grey20",
+  palette = "default",
+  xlim = NULL,
+  ylim = NULL,
+  dodge = 0.5,
+  point_size = 2.5,
+  errorbar_width = 0.1,
+  show_pre_post_legend = TRUE,
+  xlab = "Relative time to treatment change",
+  ylab = "Estimated effect",
+  base_size = 11
+)
 }
 \arguments{
-\item{...}{One or more \code{nabs_event_study_tbl} objects, or a single list of them.}
+\item{...}{One or more `nabs_event_study_tbl` objects. Bare arguments and a
+single list are both accepted.}
 
 \item{style}{Visual encoding of the pre/post distinction. One of
-\code{"prepost_color"} (default; color differs by pre/post) or
-\code{"method_shape"} (color by method only, pre/post shown by marker shape).}
+`"prepost_color"` (default; color differs by pre/post) or
+`"method_shape"` (color by method only, pre/post shown by marker shape).}
 
-\item{connect}{Logical; if \code{TRUE}, point estimates within each series are
-joined by a thin line. Pre- and post-treatment segments are drawn
-separately. Default \code{FALSE}.}
+\item{connect}{Logical. If `TRUE`, point estimates within each series are
+joined by a thin line. Default `FALSE`. The line is split at the
+treatment boundary so pre- and post-treatment segments are not joined
+across the discontinuity.}
 
-\item{connect_linewidth}{Width of the connecting line when \code{connect = TRUE}.
-Default \code{0.4}.}
+\item{connect_linewidth}{Width of the connecting line when `connect = TRUE`.
+Default `0.4`.}
 
-\item{reference}{Optional \code{nabs_event_study_tbl} drawn as a neutral-color
-reference layer (typically a naive TWFE estimate from
-\code{\link[=naive_twfe]{naive_twfe()}}).}
+\item{reference}{Optional `nabs_event_study_tbl` to draw as a neutral-color
+reference layer (typically a naive TWFE estimate). Drawn under the
+main series.}
 
-\item{reference_color}{Color for the reference series. Default \code{"grey20"}.}
+\item{reference_color}{Color for the reference series. Default `"grey20"`.}
 
-\item{palette}{Either \code{"default"}, \code{"colorblind"}, or a named character
-vector. For \code{style = "prepost_color"} the names are keyed by
-\code{"<method>_<window>"}; for \code{style = "method_shape"} they are keyed by
-\code{"<method>"}.}
+\item{palette}{Either `"default"` (the package's built-in palette,
+patterned after the DCDH/PanelMatch/IFE conventions in the codebase
+this package was extracted from), `"colorblind"` (Okabe-Ito), or a
+named character vector of colors. For `style = "prepost_color"` the names
+are keyed by `"<method>_<window>"`, e.g.
+`c("DCDH_pre" = "#DE2D26", "DCDH_post" = "#3182BD", ...)`. For
+`style = "method_shape"` the names are keyed by `"<method>"`, e.g.
+`c("DCDH" = "#3182BD", ...)`.}
 
-\item{xlim, ylim}{Numeric length-2 vectors for axis limits.}
+\item{xlim, ylim}{Numeric length-2 vectors for axis limits. `NULL` lets
+ggplot2 choose.}
 
-\item{dodge}{Position-dodge width for points, lines, and error bars.}
+\item{dodge}{Width of the position-dodge applied to points, lines, and
+error bars. The `reference` series shares this dodge with the main
+series, so all series (including the naive TWFE reference) get their own
+evenly-spaced horizontal slot and their CIs do not overlap. Default `0.5`.}
 
-\item{point_size, errorbar_width}{Aesthetic controls.}
+\item{point_size, errorbar_width}{Aesthetic controls for the geom layers.}
 
-\item{show_pre_post_legend}{Logical; if \code{TRUE} (default), legend keys are
-labeled \code{"<method>; pre"} / \code{"<method>; post"}. Only relevant for
-\code{style = "prepost_color"}.}
+\item{show_pre_post_legend}{Logical. Only relevant for
+`style = "prepost_color"`. If `TRUE`, the legend keys are labeled
+`"<method>; pre"` / `"<method>; post"`. If `FALSE`, only one key per
+method is shown. Default `TRUE`. (For `style = "method_shape"` color is
+keyed by method, and a separate shape legend shows pre/post.)}
 
 \item{xlab, ylab}{Axis labels.}
 
-\item{base_size}{Base font size for \code{theme_minimal()}.}
+\item{base_size}{Base font size passed to `theme_minimal()`.}
 }
 \value{
-A \code{ggplot} object.
+A `ggplot` object.
 }
 \description{
 Overlays event-study estimates from any combination of supported estimators
-on a single \code{ggplot2} panel. Two visual encodings are available via
-\code{style}: \code{"prepost_color"} (default) colors each method with separate
-shades for pre- and post-treatment periods, while \code{"method_shape"} colors
-by method only and carries the pre/post distinction with the marker shape.
-Set \code{connect = TRUE} to join point estimates with a thin line.
+on a single ggplot2 panel. Two visual encodings are available via `style`:
+}
+\details{
+* `"prepost_color"` (default) -- each method gets its own color, with
+  separate shades for pre- and post-treatment periods, mirroring common
+  conventions in DCDH-style plots. Points are drawn as circles throughout.
+* `"method_shape"` -- each method gets a single color (pre and post share
+  it), and the pre/post distinction is carried by the *marker shape*
+  instead (e.g. hollow circles for pre, filled triangles for post). Useful
+  for grayscale printing or when color should encode method only.
+
+An optional `reference` series -- typically a naive TWFE fit from
+[naive_twfe()] -- is drawn in a neutral color (default black) so the reader
+can see what the heterogeneity-robust estimators are correcting against.
+
+Set `connect = TRUE` to join each series' point estimates with a thin line,
+in addition to the points and error bars.
 }
 \examples{
-\dontrun{
-nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-           reference = naive_twfe_tidy,
-           xlim = c(-6, 6))
-
-nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-           reference = naive_twfe_tidy,
-           style = "method_shape", connect = TRUE)
-}
+# Build two tidy series with the dependency-free data.frame coercion,
+# then overlay them. Only ggplot2 (an Imports dependency) is needed,
+# so this example runs without any of the estimator packages.
+dcdh <- as_nabs_event_study(
+  data.frame(time      = -3:4,
+             estimate  = c(-0.02, 0.01, 0.00, 0.03, 0.28, 0.40, 0.37, 0.46),
+             std.error = 0.10),
+  method = "DCDH", outcome = "y"
+)
+ife <- as_nabs_event_study(
+  data.frame(time      = -3:4,
+             estimate  = c(0.00, -0.01, 0.02, 0.01, 0.33, 0.46, 0.40, 0.52),
+             std.error = 0.11),
+  method = "IFE", outcome = "y"
+)
+nabs_event_plot(dcdh, ife, xlim = c(-3, 4), ylab = "Effect on y")
 }

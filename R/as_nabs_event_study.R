@@ -25,12 +25,29 @@
 #'   period and the columns documented in the package overview.
 #'
 #' @examples
-#' \dontrun{
+#' # The data.frame escape hatch needs no estimator packages: pass a frame
+#' # that already has `time` and `estimate`; the remaining schema columns
+#' # (including CIs derived from `std.error`) are filled in automatically.
+#' raw <- data.frame(
+#'   time      = -3:4,
+#'   estimate  = c(-0.05, 0.01, 0.00, 0.02, 0.30, 0.42, 0.38, 0.50),
+#'   std.error = 0.12
+#' )
+#' tidy_fit <- as_nabs_event_study(raw, method = "DCDH", outcome = "y")
+#' tidy_fit
+#'
+#' @examplesIf requireNamespace("DIDmultiplegtDYN", quietly = TRUE)
+#' # With the DCDH estimator installed, coerce its native object directly.
+#' \donttest{
+#'   set.seed(1)
+#'   panel <- expand.grid(id = 1:40, t = 1:10)
+#'   panel$d <- rbinom(nrow(panel), 1, 0.3)
+#'   panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
 #'   fit <- DIDmultiplegtDYN::did_multiplegt_dyn(
-#'     df = mydata, outcome = "y", group = "id", time = "t",
-#'     treatment = "d", effects = 6, placebo = 4
+#'     df = panel, outcome = "y", group = "id", time = "t",
+#'     treatment = "d", effects = 3, placebo = 2
 #'   )
-#'   tidy_fit <- as_nabs_event_study(fit, outcome = "y")
+#'   as_nabs_event_study(fit, outcome = "y")
 #' }
 #' @export
 as_nabs_event_study <- function(x, method = NULL, outcome = NA_character_,

@@ -4,44 +4,82 @@
 \alias{naive_twfe}
 \title{Estimate a naive two-way fixed-effects (TWFE) event study}
 \usage{
-naive_twfe(data, outcome, treatment, unit, time,
-           lags = 12L, leads = 6L,
-           controls = NULL, cluster = unit, conf.level = 0.95)
+naive_twfe(
+  data,
+  outcome,
+  treatment,
+  unit,
+  time,
+  lags = 12L,
+  leads = 6L,
+  controls = NULL,
+  cluster = unit,
+  conf.level = 0.95
+)
 }
 \arguments{
 \item{data}{A data frame.}
 
-\item{outcome, treatment, unit, time}{Character column names.}
+\item{outcome}{Character. Outcome variable name.}
 
-\item{lags, leads}{Integer pre- and post-period lengths.}
+\item{treatment}{Character. Treatment indicator variable name (0/1).}
 
-\item{controls}{Optional character vector of covariate names.}
+\item{unit, time}{Character. Unit and time variable names.}
 
-\item{cluster}{Character; cluster variable. Defaults to \code{unit}.}
+\item{leads, lags}{Integers giving the number of pre- and post-periods to
+estimate. Defaults `lags = 12`, `leads = 6` (the common ANES-style
+window). The reference period (-1) is dropped automatically.}
 
-\item{conf.level}{Confidence level for the returned tibble.}
+\item{controls}{Optional character vector of additional covariates to
+include linearly (no fixed effects).}
+
+\item{cluster}{Character. Variable name(s) to cluster standard errors on.
+Defaults to `unit`.}
+
+\item{conf.level}{Confidence level for the returned tibble. Default 0.95.}
 }
 \value{
-An \code{nabs_event_study_tbl} with \code{method = "TWFE"}.
+An `nabs_event_study_tbl` with `method = "TWFE"`.
 }
 \description{
-Runs a basic event-study TWFE regression of \code{outcome} on leads and lags
-of \code{treatment}, with unit and time fixed effects, using
-\code{fixest::feols()}. Intended as a reference series for
-\code{\link[=nabs_event_plot]{nabs_event_plot()}}, drawn in a neutral color so the reader can
-see what the heterogeneity-robust estimators are correcting against.
+Runs a basic event-study TWFE regression of `outcome` on leads and lags
+of `treatment`, with unit and time fixed effects, using
+`fixest::feols()`. The result is **deliberately unsophisticated** --
+the point of `naive_twfe()` is to provide a reference series that can be
+overlaid in [nabs_event_plot()] (drawn in a neutral color by default) so the
+reader can see exactly what the heterogeneity-robust estimators are
+correcting against.
 }
 \details{
-This is intended to be a \emph{reference} model only. It is \strong{not} robust to
+Internally this builds a `time_to_event` variable
+(the difference between `time` and the first treated period for that unit)
+and estimates
+\deqn{Y_{it} = \alpha_i + \gamma_t + \sum_{k \neq -1} \beta_k 1\{R_{it} = k\} + X_{it}'\delta + \epsilon_{it}}
+with `fixest::feols()` via the `i()` operator.
+
+The raw `time_to_event` variable is `NA` for never-treated units. For the
+actual TWFE regression, never-treated observations are assigned to the
+reference event time and event-time indicators are interacted with an
+ever-treated indicator. This keeps never-treated observations in the
+estimation sample as comparison observations while preventing them from
+generating event-time dummy coefficients.
+
+This is intended to be a *reference* model. It is **not** robust to
 treatment-effect heterogeneity and will be biased exactly in the cases
 where DCDH / PanelMatch / IFE differ from it -- which is precisely
 what makes it useful as a visual baseline.
 }
 \examples{
-\dontrun{
-ref <- naive_twfe(mydata, outcome = "y", treatment = "d",
-                  unit = "id", time = "t",
-                  lags = 12, leads = 6)
-nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy, reference = ref)
+\dontshow{if (requireNamespace("fixest", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\donttest{
+  set.seed(1)
+  panel <- expand.grid(id = 1:40, t = 1:10)
+  panel$d <- rbinom(nrow(panel), 1, 0.3)
+  panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
+  ref <- naive_twfe(panel, outcome = "y", treatment = "d",
+                    unit = "id", time = "t",
+                    lags = 3, leads = 3)
+  ref
 }
+\dontshow{\}) # examplesIf}
 }

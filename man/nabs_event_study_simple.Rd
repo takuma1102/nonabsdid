@@ -4,66 +4,107 @@
 \alias{nabs_event_study_simple}
 \title{One-line exploratory front door for non-absorbing event studies}
 \usage{
-nabs_event_study_simple(data, outcome, treatment, unit, time,
-                        methods = c("DCDH", "PanelMatch", "IFE"),
-                        include_twfe = TRUE,
-                        lags = NULL, leads = NULL,
-                        controls = NULL,
-                        verbose = TRUE,
-                        ...)
+nabs_event_study_simple(
+  data,
+  outcome,
+  treatment,
+  unit,
+  time,
+  methods = c("DCDH", "PanelMatch", "IFE"),
+  include_twfe = TRUE,
+  lags = NULL,
+  leads = NULL,
+  controls = NULL,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{A panel data frame.}
 
-\item{outcome, treatment, unit, time}{Character column names. Treatment is a
-0/1 indicator that may switch back to 0 (non-absorbing).}
+\item{outcome, treatment, unit, time}{Character column names. The treatment
+column should be a 0/1 indicator (it is allowed to switch back to 0,
+i.e. non-absorbing).}
 
 \item{methods}{Character vector of estimators to run. Any subset of
-\code{c("DCDH", "PanelMatch", "IFE", "FE", "MC")}. Default
-\code{c("DCDH", "PanelMatch", "IFE")}.}
+`c("DCDH", "PanelMatch", "IFE", "FE", "MC")`. Default `c("DCDH",
+"PanelMatch", "IFE")` -- the three classic heterogeneity-robust
+estimators.}
 
-\item{include_twfe}{Logical; if \code{TRUE} (default), also fit a naive TWFE
-reference series and overlay it in a neutral color.}
+\item{include_twfe}{Logical; if `TRUE` (default), also fit a naive TWFE
+reference series via [naive_twfe()] and overlay it in a neutral color.}
 
-\item{lags, leads}{Integer pre- and post-period lengths. If \code{NULL}
-(default), reasonable values are auto-chosen from the panel.}
+\item{lags, leads}{Integer pre- and post-period lengths. If `NULL`
+(default), reasonable values are auto-chosen from the panel: `leads`
+is set to roughly one third of the longest post-treatment span
+(capped at 8), and `lags` to roughly one quarter of the longest
+pre-treatment span (capped at 6). Override either explicitly to be
+sure of the window.}
 
-\item{controls}{Optional character vector of covariate names.}
+\item{controls}{Optional character vector of covariate names; passed
+straight through to each estimator.}
 
-\item{verbose}{Logical; if \code{TRUE} (default), print progress messages.}
+\item{verbose}{Logical; if `TRUE` (default), print a brief progress
+message before each estimator runs.}
 
-\item{...}{Forwarded to \code{\link{nabs_event_plot}}.}
+\item{...}{Forwarded to [nabs_event_plot()] (e.g. `xlim`, `ylim`,
+`palette`, `ylab`).}
 }
 \value{
-A list of class \code{"nabs_event_study_simple"} with elements
-\code{plot}, \code{tidy}, \code{per_method}, \code{fits}, \code{twfe},
-and \code{call}.
+A list of class `"nabs_event_study_simple"` with elements:
+  \describe{
+    \item{`plot`}{A `ggplot` object; the overlay figure.}
+    \item{`tidy`}{A single combined `nabs_event_study_tbl` with all methods.}
+    \item{`per_method`}{Named list of per-method tidy tibbles.}
+    \item{`fits`}{Named list of native estimator objects.}
+    \item{`twfe`}{The TWFE reference (or `NULL`).}
+    \item{`call`}{The matched call.}
+  }
 }
 \description{
-A deliberately opinionated convenience wrapper for the first 30 seconds
-of an analysis. Runs all heterogeneity-robust estimators with sensible
-defaults and returns a single overlay plot plus the underlying tidy data.
-For a careful, publication-ready result, switch to
-\code{\link{nabs_event_study}} and tune options per estimator.
+`nabs_event_study_simple()` is a deliberately opinionated convenience
+wrapper for the *first 30 seconds* of an analysis. You give it your data
+and the four column names that identify outcome / treatment / unit / time,
+and it tries to give you a sensible event-study figure with as little
+typing as possible.
 }
 \details{
+By default it runs **all three** heterogeneity-robust estimators (DCDH,
+PanelMatch, IFE) plus a naive TWFE reference, and returns a single
+overlay plot along with the tidy tibbles and raw fits. Use it to *see
+the picture quickly*; for a careful, publication-ready result, switch
+to [nabs_event_study()] and tune options per estimator.
+
+
 If a particular estimator's package is not installed, that estimator is
-silently skipped. Errors from a single estimator are caught and reported
-as a warning; the remaining estimators continue.
+silently skipped with a message and the rest are still attempted. This
+is intentional: the goal of `_simple()` is to give you *something* to
+look at even if your environment isn't fully provisioned.
+
+Errors from a single estimator (for instance, PanelMatch failing because
+there are too few clean controls in the lag window) are caught, reported
+as a warning, and the remaining estimators continue.
 }
 \examples{
-\dontrun{
-res <- nabs_event_study_simple(
-  mydata,
-  outcome   = "y",
-  treatment = "d",
-  unit      = "id",
-  time      = "t"
-)
-res$plot
+\dontshow{if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+\donttest{
+  set.seed(1)
+  panel <- expand.grid(id = 1:40, t = 1:10)
+  panel$d <- rbinom(nrow(panel), 1, 0.3)
+  panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
 
-nabs_event_study_simple(mydata, "y", "d", "id", "t",
-                        methods = c("DCDH", "IFE", "MC"),
-                        lags = 4, leads = 6)
+  # Restrict to a single estimator for a fast, self-contained example.
+  res <- nabs_event_study_simple(
+    panel,
+    outcome   = "y",
+    treatment = "d",
+    unit      = "id",
+    time      = "t",
+    methods   = "DCDH",
+    lags = 2, leads = 3
+  )
+  res$plot
+  res$tidy
 }
+\dontshow{\}) # examplesIf}
 }

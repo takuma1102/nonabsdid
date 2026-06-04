@@ -59,18 +59,22 @@
 #' @return A `ggplot` object.
 #'
 #' @examples
-#' \dontrun{
-#'   # Default: color encodes pre/post
-#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-#'                   reference = naive_twfe_tidy,
-#'                   xlim = c(-6, 6), ylim = c(-2, 2),
-#'                   ylab = "Effect on logged dollars")
-#'
-#'   # Color encodes method only; pre/post shown by marker shape; join points
-#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-#'                   style = "method_shape", connect = TRUE,
-#'                   reference = naive_twfe_tidy)
-#' }
+#' # Build two tidy series with the dependency-free data.frame coercion,
+#' # then overlay them. Only ggplot2 (an Imports dependency) is needed,
+#' # so this example runs without any of the estimator packages.
+#' dcdh <- as_nabs_event_study(
+#'   data.frame(time      = -3:4,
+#'              estimate  = c(-0.02, 0.01, 0.00, 0.03, 0.28, 0.40, 0.37, 0.46),
+#'              std.error = 0.10),
+#'   method = "DCDH", outcome = "y"
+#' )
+#' ife <- as_nabs_event_study(
+#'   data.frame(time      = -3:4,
+#'              estimate  = c(0.00, -0.01, 0.02, 0.01, 0.33, 0.46, 0.40, 0.52),
+#'              std.error = 0.11),
+#'   method = "IFE", outcome = "y"
+#' )
+#' nabs_event_plot(dcdh, ife, xlim = c(-3, 4), ylab = "Effect on y")
 #' @export
 nabs_event_plot <- function(...,
                        style = c("prepost_color", "method_shape"),

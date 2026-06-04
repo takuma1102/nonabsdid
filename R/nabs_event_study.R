@@ -30,13 +30,16 @@
 #'     \item{`call`}{The call that produced it.}
 #'   }
 #'
-#' @examples
-#' \dontrun{
-#'   res_dcdh <- nabs_event_study(mydata, outcome = "y", treatment = "d",
-#'                            unit = "id", time = "t",
-#'                            method = "DCDH",
-#'                            lags = 6, leads = 8,
-#'                            controls = c("x1", "x2"))
+#' @examplesIf requireNamespace("DIDmultiplegtDYN", quietly = TRUE)
+#' \donttest{
+#'   set.seed(1)
+#'   panel <- expand.grid(id = 1:40, t = 1:10)
+#'   panel$d <- rbinom(nrow(panel), 1, 0.3)
+#'   panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
+#'   res_dcdh <- nabs_event_study(panel, outcome = "y", treatment = "d",
+#'                                unit = "id", time = "t",
+#'                                method = "DCDH",
+#'                                lags = 2, leads = 3)
 #'   res_dcdh$tidy
 #' }
 #' @export

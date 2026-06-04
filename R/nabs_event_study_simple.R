@@ -55,23 +55,25 @@
 #' there are too few clean controls in the lag window) are caught, reported
 #' as a warning, and the remaining estimators continue.
 #'
-#' @examples
-#' \dontrun{
-#'   # Minimal call -- runs DCDH + PanelMatch + IFE + naive TWFE,
-#'   # returns the figure and the tidy data.
+#' @examplesIf requireNamespace("DIDmultiplegtDYN", quietly = TRUE)
+#' \donttest{
+#'   set.seed(1)
+#'   panel <- expand.grid(id = 1:40, t = 1:10)
+#'   panel$d <- rbinom(nrow(panel), 1, 0.3)
+#'   panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
+#'
+#'   # Restrict to a single estimator for a fast, self-contained example.
 #'   res <- nabs_event_study_simple(
-#'     mydata,
+#'     panel,
 #'     outcome   = "y",
 #'     treatment = "d",
 #'     unit      = "id",
-#'     time      = "t"
+#'     time      = "t",
+#'     methods   = "DCDH",
+#'     lags = 2, leads = 3
 #'   )
 #'   res$plot
-#'
-#'   # Subset of methods, custom window:
-#'   nabs_event_study_simple(mydata, "y", "d", "id", "t",
-#'                           methods = c("DCDH", "IFE", "MC"),
-#'                           lags = 4, leads = 6)
+#'   res$tidy
 #' }
 #' @export
 nabs_event_study_simple <- function(data, outcome, treatment, unit, time,

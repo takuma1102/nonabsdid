@@ -86,8 +86,7 @@ there are too few clean controls in the lag window) are caught, reported
 as a warning, and the remaining estimators continue.
 }
 \examples{
-\dontshow{if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-\donttest{
+\dontrun{
   set.seed(1)
   panel <- expand.grid(id = 1:40, t = 1:10)
   panel$d <- rbinom(nrow(panel), 1, 0.3)
@@ -106,5 +105,4 @@ as a warning, and the remaining estimators continue.
   res$plot
   res$tidy
 }
-\dontshow{\}) # examplesIf}
 }

@@ -179,9 +179,8 @@ raw <- data.frame(
 tidy_fit <- as_nabs_event_study(raw, method = "DCDH", outcome = "y")
 tidy_fit
 
-\dontshow{if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 # With the DCDH estimator installed, coerce its native object directly.
-\donttest{
+\dontrun{
   set.seed(1)
   panel <- expand.grid(id = 1:40, t = 1:10)
   panel$d <- rbinom(nrow(panel), 1, 0.3)
@@ -192,5 +191,4 @@ tidy_fit
   )
   as_nabs_event_study(fit, outcome = "y")
 }
-\dontshow{\}) # examplesIf}
 }

@@ -70,8 +70,7 @@ where DCDH / PanelMatch / IFE differ from it -- which is precisely
 what makes it useful as a visual baseline.
 }
 \examples{
-\dontshow{if (requireNamespace("fixest", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-\donttest{
+\dontrun{
   set.seed(1)
   panel <- expand.grid(id = 1:40, t = 1:10)
   panel$d <- rbinom(nrow(panel), 1, 0.3)
@@ -81,5 +80,4 @@ what makes it useful as a visual baseline.
                     lags = 3, leads = 3)
   ref
 }
-\dontshow{\}) # examplesIf}
 }

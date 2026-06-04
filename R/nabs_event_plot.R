@@ -1,15 +1,34 @@
 #' Plot one or more event-study tibbles on a single panel
 #'
 #' Overlays event-study estimates from any combination of supported estimators
-#' on a single ggplot2 panel. Each method gets its own color (with separate
-#' shades for pre- and post-treatment periods, mirroring common conventions
-#' in DCDH-style plots). An optional `reference` series -- typically a naive
-#' TWFE fit from [naive_twfe()] -- is drawn in a neutral color (default
-#' black) so the reader can see what the heterogeneity-robust estimators
-#' are correcting against.
+#' on a single ggplot2 panel. Two visual encodings are available via `style`:
+#'
+#' * `"prepost_color"` (default) -- each method gets its own color, with
+#'   separate shades for pre- and post-treatment periods, mirroring common
+#'   conventions in DCDH-style plots. Points are drawn as circles throughout.
+#' * `"method_shape"` -- each method gets a single color (pre and post share
+#'   it), and the pre/post distinction is carried by the *marker shape*
+#'   instead (e.g. hollow circles for pre, filled triangles for post). Useful
+#'   for grayscale printing or when color should encode method only.
+#'
+#' An optional `reference` series -- typically a naive TWFE fit from
+#' [naive_twfe()] -- is drawn in a neutral color (default black) so the reader
+#' can see what the heterogeneity-robust estimators are correcting against.
+#'
+#' Set `connect = TRUE` to join each series' point estimates with a thin line,
+#' in addition to the points and error bars.
 #'
 #' @param ... One or more `nabs_event_study_tbl` objects. Bare arguments and a
 #'   single list are both accepted.
+#' @param style Visual encoding of the pre/post distinction. One of
+#'   `"prepost_color"` (default; color differs by pre/post) or
+#'   `"method_shape"` (color by method only, pre/post shown by marker shape).
+#' @param connect Logical. If `TRUE`, point estimates within each series are
+#'   joined by a thin line. Default `FALSE`. The line is split at the
+#'   treatment boundary so pre- and post-treatment segments are not joined
+#'   across the discontinuity.
+#' @param connect_linewidth Width of the connecting line when `connect = TRUE`.
+#'   Default `0.4`.
 #' @param reference Optional `nabs_event_study_tbl` to draw as a neutral-color
 #'   reference layer (typically a naive TWFE estimate). Drawn under the
 #'   main series.
@@ -17,18 +36,23 @@
 #' @param palette Either `"default"` (the package's built-in palette,
 #'   patterned after the DCDH/PanelMatch/IFE conventions in the codebase
 #'   this package was extracted from), `"colorblind"` (Okabe-Ito), or a
-#'   named character vector of colors keyed by `"<method>_<window>"`,
-#'   e.g. `c("DCDH_pre" = "#DE2D26", "DCDH_post" = "#3182BD", ...)`.
+#'   named character vector of colors. For `style = "prepost_color"` the names
+#'   are keyed by `"<method>_<window>"`, e.g.
+#'   `c("DCDH_pre" = "#DE2D26", "DCDH_post" = "#3182BD", ...)`. For
+#'   `style = "method_shape"` the names are keyed by `"<method>"`, e.g.
+#'   `c("DCDH" = "#3182BD", ...)`.
 #' @param xlim,ylim Numeric length-2 vectors for axis limits. `NULL` lets
 #'   ggplot2 choose.
-#' @param dodge Width of the position-dodge applied to points and error
-#'   bars. The `reference` series shares this dodge with the main series, so
-#'   all series (including the naive TWFE reference) get their own
+#' @param dodge Width of the position-dodge applied to points, lines, and
+#'   error bars. The `reference` series shares this dodge with the main
+#'   series, so all series (including the naive TWFE reference) get their own
 #'   evenly-spaced horizontal slot and their CIs do not overlap. Default `0.5`.
 #' @param point_size,errorbar_width Aesthetic controls for the geom layers.
-#' @param show_pre_post_legend Logical. If `TRUE`, the legend keys are
-#'   labeled `"<method>; pre"` / `"<method>; post"`. If `FALSE`, only one
-#'   key per method is shown. Default `TRUE`.
+#' @param show_pre_post_legend Logical. Only relevant for
+#'   `style = "prepost_color"`. If `TRUE`, the legend keys are labeled
+#'   `"<method>; pre"` / `"<method>; post"`. If `FALSE`, only one key per
+#'   method is shown. Default `TRUE`. (For `style = "method_shape"` color is
+#'   keyed by method, and a separate shape legend shows pre/post.)
 #' @param xlab,ylab Axis labels.
 #' @param base_size Base font size passed to `theme_minimal()`.
 #'
@@ -36,15 +60,22 @@
 #'
 #' @examples
 #' \dontrun{
-#'   p <- nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
+#'   # Default: color encodes pre/post
+#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
 #'                   reference = naive_twfe_tidy,
-#'                   xlim = c(-6, 6),
-#'                   ylim = c(-2, 2),
+#'                   xlim = c(-6, 6), ylim = c(-2, 2),
 #'                   ylab = "Effect on logged dollars")
-#'   p
+#'
+#'   # Color encodes method only; pre/post shown by marker shape; join points
+#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
+#'                   style = "method_shape", connect = TRUE,
+#'                   reference = naive_twfe_tidy)
 #' }
 #' @export
 nabs_event_plot <- function(...,
+                       style = c("prepost_color", "method_shape"),
+                       connect = FALSE,
+                       connect_linewidth = 0.4,
                        reference = NULL,
                        reference_color = "grey20",
                        palette = "default",
@@ -58,6 +89,7 @@ nabs_event_plot <- function(...,
                        ylab = "Estimated effect",
                        base_size = 11) {
   rlang::check_installed("ggplot2")
+  style <- match.arg(style)
 
   series <- collect_event_studies(list(...))
   if (length(series) == 0L) {
@@ -65,13 +97,25 @@ nabs_event_plot <- function(...,
   }
 
   df <- bind_event_studies(series)
-  df$key  <- paste(df$method, df$window, sep = "_")
-  df$role <- "main"          # used to give the reference a lighter look
-  df$shp  <- df$window       # circle for pre, triangle for post
+  df$window <- ifelse(df$time < 0, "pre", "post")
+  # `cgrp` is the color grouping; `dgrp` the dodge slot (always per method, so
+  # every method occupies one evenly-spaced horizontal slot and connecting
+  # lines line up with the points). `shp` is the marker shape.
+  if (style == "prepost_color") {
+    df$cgrp <- paste(df$method, df$window, sep = "_")
+    df$shp  <- "pt"                       # single shape (circle) throughout
+  } else {                                # method_shape
+    df$cgrp <- df$method
+    df$shp  <- df$window                  # pre vs post -> different markers
+  }
+  df$dgrp <- df$method
+  df$role <- "main"                       # lets the reference take a lighter look
+  # Segment id so connecting lines don't bridge the pre/post discontinuity.
+  df$seg  <- paste(df$dgrp, df$window, sep = "@@")
 
   # Resolve the palette on the main series only (before the reference is
   # folded in), so resolve_palette() doesn't warn about a missing key.
-  pal <- resolve_palette(palette, df)
+  pal <- resolve_palette(palette, df, style)
 
   # Fold the reference (e.g. naive TWFE) into the SAME data frame so it shares
   # the position_dodge with the main series. Drawn as its own layer it would
@@ -83,10 +127,13 @@ nabs_event_plot <- function(...,
     if (!inherits(reference, "nabs_event_study_tbl")) {
       reference <- as_nabs_event_study(reference)
     }
+    reference$window <- ifelse(reference$time < 0, "pre", "post")
     ref_key <- paste(unique(reference$method), collapse = "/")
-    reference$key  <- ref_key
+    reference$cgrp <- ref_key
+    reference$dgrp <- ref_key
     reference$role <- "ref"
-    reference$shp  <- "ref"   # keep the reference as circles in every period
+    reference$shp  <- if (style == "method_shape") "ref" else "pt"
+    reference$seg  <- paste(ref_key, reference$window, sep = "@@")
     pal <- c(pal, stats::setNames(reference_color, ref_key))
 
     common <- intersect(names(df), names(reference))
@@ -94,26 +141,43 @@ nabs_event_plot <- function(...,
                            reference[, common, drop = FALSE])
   }
 
-  # Build labels for legend (e.g. "DCDH; pre" or just "DCDH").
-  if (isTRUE(show_pre_post_legend)) {
-    label_for <- function(k) {
-      parts <- strsplit(k, "_", fixed = TRUE)[[1]]
-      paste0(parts[1], "; ", parts[2])
+  # Build color-legend labels.
+  if (style == "prepost_color") {
+    if (isTRUE(show_pre_post_legend)) {
+      label_for <- function(k) {
+        parts <- strsplit(k, "_", fixed = TRUE)[[1]]
+        paste0(parts[1], "; ", parts[2])
+      }
+    } else {
+      label_for <- function(k) strsplit(k, "_", fixed = TRUE)[[1]][1]
     }
   } else {
-    label_for <- function(k) strsplit(k, "_", fixed = TRUE)[[1]][1]
+    label_for <- function(k) k             # already the method name
   }
   lbls <- vapply(names(pal), label_for, character(1))
   if (!is.null(ref_key)) {
     lbls[ref_key] <- paste0(ref_key, " (naive)")
   }
 
+  pos <- ggplot2::position_dodge(width = dodge)
+
   p <- ggplot2::ggplot(
     df,
     ggplot2::aes(x = .data$time, y = .data$estimate,
-                 color = .data$key, shape = .data$shp,
-                 group = .data$key)   # group == key => one dodge slot per series
+                 color = .data$cgrp, shape = .data$shp,
+                 group = .data$dgrp)   # one dodge slot per method
   )
+
+  # Optional thin connecting line, drawn first so points/bars sit on top.
+  if (isTRUE(connect)) {
+    p <- p +
+      ggplot2::geom_line(
+        ggplot2::aes(alpha = .data$role, group = .data$seg),
+        linewidth = connect_linewidth,
+        position  = pos,
+        show.legend = FALSE
+      )
+  }
 
   p <- p +
     ggplot2::geom_errorbar(
@@ -121,11 +185,11 @@ nabs_event_plot <- function(...,
                    alpha = .data$role),
       width = errorbar_width,
       linewidth = 0.8,
-      position = ggplot2::position_dodge(width = dodge)
+      position = pos
     ) +
     ggplot2::geom_point(
       ggplot2::aes(alpha = .data$role, size = .data$role),
-      position = ggplot2::position_dodge(width = dodge)
+      position = pos
     ) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
     ggplot2::geom_vline(xintercept = 0, linetype = "dotted", color = "grey50") +
@@ -135,10 +199,6 @@ nabs_event_plot <- function(...,
       breaks = names(pal),
       labels = lbls
     ) +
-    ggplot2::scale_shape_manual(
-      name   = NULL,
-      values = c("pre" = 16L, "post" = 16L, "ref" = 16L)
-    ) +
     ggplot2::scale_alpha_manual(
       values = c("main" = 1, "ref" = 0.7),
       guide  = "none"
@@ -147,13 +207,28 @@ nabs_event_plot <- function(...,
       values = c("main" = point_size, "ref" = point_size * 0.85),
       guide  = "none"
     ) +
-    ggplot2::guides(shape = "none") +
     ggplot2::labs(x = xlab, y = ylab) +
     ggplot2::theme_minimal(base_size = base_size) +
     ggplot2::theme(
       legend.position  = "bottom",
       legend.key.width = ggplot2::unit(1.5, "lines")
     )
+
+  if (style == "prepost_color") {
+    # All one shape (circle); hide the shape legend.
+    p <- p +
+      ggplot2::scale_shape_manual(values = c("pt" = 16L)) +
+      ggplot2::guides(shape = "none")
+  } else {
+    # Shape carries pre/post; keep its legend.
+    p <- p +
+      ggplot2::scale_shape_manual(
+        name   = NULL,
+        values = c("pre" = 1L, "post" = 17L, "ref" = 15L),
+        breaks = c("pre", "post"),
+        labels = c("pre" = "pre", "post" = "post")
+      )
+  }
 
   if (!is.null(xlim) || !is.null(ylim)) {
     p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
@@ -206,13 +281,38 @@ colorblind_palette <- c(
   "MC_post"         = "#44AA99"
 )
 
-resolve_palette <- function(palette, df) {
-  needed <- unique(df$key)
+# Method-level palettes for style = "method_shape" (one color per method).
+# These take the "post" hue from each pair above, which reads well as the
+# single method color.
+default_method_palette <- c(
+  "DCDH"       = "#3182BD",
+  "PanelMatch" = "#08519C",
+  "IFE"        = "#1B9E77",
+  "FE"         = "#2C7FB8",
+  "MC"         = "#41B6C4"
+)
+
+colorblind_method_palette <- c(
+  "DCDH"       = "#0072B2",
+  "PanelMatch" = "#E69F00",
+  "IFE"        = "#009E73",
+  "FE"         = "#CC79A7",
+  "MC"         = "#D55E00"
+)
+
+resolve_palette <- function(palette, df, style = "prepost_color") {
+  needed <- unique(df$cgrp)
+
+  builtin <- if (identical(style, "method_shape")) {
+    list(default = default_method_palette, colorblind = colorblind_method_palette)
+  } else {
+    list(default = default_palette, colorblind = colorblind_palette)
+  }
 
   pal <- if (is.character(palette) && length(palette) == 1L) {
     switch(palette,
-           default     = default_palette,
-           colorblind  = colorblind_palette,
+           default     = builtin$default,
+           colorblind  = builtin$colorblind,
            cli::cli_abort("Unknown palette name {.val {palette}}.")
     )
   } else if (is.character(palette) && !is.null(names(palette))) {

@@ -12,6 +12,7 @@ nabs_event_plot(
   reference = NULL,
   reference_color = "grey20",
   palette = "default",
+  shapes = NULL,
   xlim = NULL,
   ylim = NULL,
   dodge = 0.5,
@@ -27,9 +28,9 @@ nabs_event_plot(
 \item{...}{One or more `nabs_event_study_tbl` objects. Bare arguments and a
 single list are both accepted.}
 
-\item{style}{Visual encoding of the pre/post distinction. One of
-`"prepost_color"` (default; color differs by pre/post) or
-`"method_shape"` (color by method only).}
+\item{style}{Visual encoding. One of `"prepost_color"` (default; color
+differs by pre/post) or `"method_shape"` (color and marker shape both
+encode the method, shared across pre/post).}
 
 \item{connect}{Logical. If `TRUE`, point estimates within each series are
 joined by a thin line. Default `FALSE`. The line is split at the
@@ -52,7 +53,11 @@ named character vector of colors. For `style = "prepost_color"` the names
 are keyed by `"<method>_<window>"`, e.g.
 `c("DCDH_pre" = "#DE2D26", "DCDH_post" = "#3182BD", ...)`. For
 `style = "method_shape"` the names are keyed by `"<method>"`, e.g.
-`c("DCDH" = "#3182BD", ...)`.}
+`c("DCDH" = "#DE2D26", ...)`.}
+
+\item{shapes}{Optional named integer vector of plotting symbols keyed by
+`"<method>"`, used only when `style = "method_shape"`. Defaults to the
+package's built-in shape set.}
 
 \item{xlim, ylim}{Numeric length-2 vectors for axis limits. `NULL` lets
 ggplot2 choose.}
@@ -67,8 +72,7 @@ evenly-spaced horizontal slot and their CIs do not overlap. Default `0.5`.}
 \item{show_pre_post_legend}{Logical. Only relevant for
 `style = "prepost_color"`. If `TRUE`, the legend keys are labeled
 `"<method>; pre"` / `"<method>; post"`. If `FALSE`, only one key per
-method is shown. Default `TRUE`. (For `style = "method_shape"` color is
-keyed by method, and a separate shape legend shows pre/post.)}
+method is shown. Default `TRUE`.}
 
 \item{xlab, ylab}{Axis labels.}
 
@@ -85,10 +89,10 @@ on a single ggplot2 panel. Two visual encodings are available via `style`:
 * `"prepost_color"` (default) -- each method gets its own color, with
   separate shades for pre- and post-treatment periods, mirroring common
   conventions in DCDH-style plots. Points are drawn as circles throughout.
-* `"method_shape"` -- each method gets a single color (pre and post share
-  it), and the pre/post distinction is carried by the *marker shape*
-  instead (e.g. hollow circles for pre, filled triangles for post). Useful
-  for grayscale printing or when color should encode method only.
+* `"method_shape"` -- each method gets a single color *and* a single marker
+  shape. Pre and post periods share both the color and the shape; they are
+  told apart only by their position relative to time 0. Because method is
+  double-encoded (color + shape), this style stays legible in grayscale.
 
 An optional `reference` series -- typically a naive TWFE fit from
 [naive_twfe()] -- is drawn in a neutral color (default black) so the reader
@@ -98,20 +102,16 @@ Set `connect = TRUE` to join each series' point estimates with a thin line,
 in addition to the points and error bars.
 }
 \examples{
-# Build two tidy series with the dependency-free data.frame coercion,
-# then overlay them. Only ggplot2 (an Imports dependency) is needed,
-# so this example runs without any of the estimator packages.
-dcdh <- as_nabs_event_study(
-  data.frame(time      = -3:4,
-             estimate  = c(-0.02, 0.01, 0.00, 0.03, 0.28, 0.40, 0.37, 0.46),
-             std.error = 0.10),
-  method = "DCDH", outcome = "y"
-)
-ife <- as_nabs_event_study(
-  data.frame(time      = -3:4,
-             estimate  = c(0.00, -0.01, 0.02, 0.01, 0.33, 0.46, 0.40, 0.52),
-             std.error = 0.11),
-  method = "IFE", outcome = "y"
-)
-nabs_event_plot(dcdh, ife, xlim = c(-3, 4), ylab = "Effect on y")
+\dontrun{
+  # Default: color encodes pre/post
+  nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
+                  reference = naive_twfe_tidy,
+                  xlim = c(-6, 6), ylim = c(-2, 2),
+                  ylab = "Effect on logged dollars")
+
+  # Color + shape both encode the method (shared across pre/post); join points
+  nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
+                  style = "method_shape", connect = TRUE,
+                  reference = naive_twfe_tidy)
+}
 }

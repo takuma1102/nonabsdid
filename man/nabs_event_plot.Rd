@@ -29,7 +29,7 @@ single list are both accepted.}
 
 \item{style}{Visual encoding of the pre/post distinction. One of
 `"prepost_color"` (default; color differs by pre/post) or
-`"method_shape"` (color by method only, pre/post shown by marker shape).}
+`"method_shape"` (color by method only).}
 
 \item{connect}{Logical. If `TRUE`, point estimates within each series are
 joined by a thin line. Default `FALSE`. The line is split at the

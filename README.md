@@ -126,6 +126,37 @@ nabs_event_plot(
 )
 ```
 
+## Plot styles
+
+`nabs_event_plot()` offers two ways to encode the pre/post distinction, plus
+an option to join point estimates with a thin line. Both arguments also flow
+through `nabs_event_study_simple()` via `...`.
+
+By default (`style = "prepost_color"`), each method gets its own color with
+separate shades for pre- and post-treatment periods:
+
+```r
+nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref)
+```
+
+With `style = "method_shape"`, color encodes the *method* only, and the
+pre/post distinction is carried by the marker shape (hollow circles for pre,
+filled triangles for post). This reads cleanly in grayscale:
+
+```r
+nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,
+                style = "method_shape")
+```
+
+Set `connect = TRUE` (works with either style) to join each series' point
+estimates with a thin line. Pre- and post-treatment segments are drawn
+separately, so the line is not joined across the treatment boundary:
+
+```r
+nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,
+                style = "method_shape", connect = TRUE)
+```
+
 ## Working from existing results
 
 If you have already run supported estimators, you can convert their result

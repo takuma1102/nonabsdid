@@ -137,7 +137,7 @@ nabs_event_plot <- function(...,
     ) +
     ggplot2::scale_shape_manual(
       name   = NULL,
-      values = c("pre" = 16L, "post" = 17L, "ref" = 16L)
+      values = c("pre" = 16L, "post" = 16L, "ref" = 16L)
     ) +
     ggplot2::scale_alpha_manual(
       values = c("main" = 1, "ref" = 0.7),

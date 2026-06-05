@@ -119,14 +119,17 @@ the rest of the schema if missing.
 
 ## fixest method
 
-Extracts coefficients on `time_to_event` interactions built by [naive_twfe()]
-with `fixest::i()`. Standard errors come from the model's clustered VCOV;
-confidence intervals use the normal approximation and `conf.level`.
+Extracts coefficients on `time_to_event` interactions of the form
+`time_to_event::<k>` or `time_to_event::<k>:<interaction>`, the coefficient
+names produced by `fixest::i()`. These are treated as event-study *levels*
+(the classic absorbing-treatment parametrisation). Standard errors come from
+the model's clustered VCOV; confidence intervals use the normal
+approximation and `conf.level`.
 
-If you call `as_nabs_event_study()` directly on a `fixest` object, the model
-must contain coefficients of the form `time_to_event::<k>` or
-`time_to_event::<k>:<interaction_variable>`. These are the coefficient-name
-patterns produced by `fixest::i()`.
+Note that [naive_twfe()] no longer fits this absorbing parametrisation
+itself -- it uses a distributed-lag design and performs the cumulation
+internally -- but this method is retained so that models you fit yourself
+with `fixest::i()` can still be tidied.
 
 ## fect method
 

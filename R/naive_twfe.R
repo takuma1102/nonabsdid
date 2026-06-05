@@ -1,58 +1,67 @@
 #' Estimate a naive two-way fixed-effects (TWFE) event study
 #'
-#' Runs a basic event-study TWFE regression of `outcome` on leads and lags
-#' of `treatment`, with unit and time fixed effects, using
-#' `fixest::feols()`. The result is **deliberately unsophisticated** --
-#' the point of `naive_twfe()` is to provide a reference series that can be
-#' overlaid in [nabs_event_plot()] (drawn in a neutral color by default) so the
-#' reader can see exactly what the heterogeneity-robust estimators are
-#' correcting against.
+#' Runs a basic event-study TWFE regression of `outcome` on leads and lags of
+#' the treatment, with unit and time fixed effects, using `fixest::feols()`.
+#' The result is **deliberately unsophisticated** -- the point of
+#' `nonabsdid` is to contrast this naive benchmark against heterogeneity-robust
+#' estimators (DCDH, `fect`, PanelMatch).
 #'
-#' @param data A data frame.
-#' @param outcome Character. Outcome variable name.
-#' @param treatment Character. Treatment indicator variable name (0/1).
-#' @param unit,time Character. Unit and time variable names.
-#' @param leads,lags Integers giving the number of pre- and post-periods to
-#'   estimate. Defaults `lags = 12`, `leads = 6` (the common ANES-style
-#'   window). The reference period (-1) is dropped automatically.
-#' @param controls Optional character vector of additional covariates to
-#'   include linearly (no fixed effects).
-#' @param cluster Character. Variable name(s) to cluster standard errors on.
-#'   Defaults to `unit`.
+#' Unlike a classic event study, `naive_twfe()` does **not** assume the
+#' treatment is absorbing. It is built for binary treatments that can switch on
+#' *and off* over time (e.g. a policy that is repealed, a subsidy that lapses).
+#' Internally it uses the distributed-lag formulation of Schmidheiny and
+#' Siegloch (2023): the design is built from treatment *changes*
+#' \eqn{\Delta D_{it} = D_{it} - D_{i,t-1}}, with the most distant lead and lag
+#' "binned" using the treatment *level*, and the reported event-study path is
+#' the cumulative sum of the distributed-lag coefficients. This recovers the
+#' usual event-study plot when treatment happens to be absorbing, but stays
+#' correct when it is not.
+#'
+#' @param data A data frame (panel) in long format.
+#' @param outcome,treatment,unit,time Character scalars naming the outcome,
+#'   the 0/1 (or `FALSE`/`TRUE`) treatment indicator, the unit id, and the time
+#'   variable.
+#' @param lags Non-negative integer: number of pre-treatment periods (event
+#'   times \eqn{-1, \dots, -\mathrm{lags}}) to report. Event time `-1` is the
+#'   omitted reference.
+#' @param leads Non-negative integer: number of post-treatment periods (event
+#'   times \eqn{0, \dots, \mathrm{leads}}) to report.
+#' @param controls Optional character vector of additional control columns.
+#' @param cluster Character vector of column names to cluster standard errors
+#'   on. Defaults to `unit`.
 #' @param conf.level Confidence level for the returned tibble. Default 0.95.
 #'
-#' @return An `nabs_event_study_tbl` with `method = "TWFE"`.
+#' @return An `nabs_event_study_tbl` with `method = "TWFE"`. The fitted
+#'   `fixest` model is attached as the `"fit"` attribute.
 #'
 #' @details
-#' Internally this builds a `time_to_event` variable
-#' (the difference between `time` and the first treated period for that unit)
-#' and estimates
-#' \deqn{Y_{it} = \alpha_i + \gamma_t + \sum_{k \neq -1} \beta_k 1\{R_{it} = k\} + X_{it}'\delta + \epsilon_{it}}
-#' with `fixest::feols()` via the `i()` operator.
+#' The naming of `lags`/`leads` follows the package convention used elsewhere
+#' (and in the README): `lags` counts pre-periods, `leads` counts post-periods,
+#' so `lags = 6, leads = 8` yields event times on `[-6, 8]`.
 #'
-#' The raw `time_to_event` variable is `NA` for never-treated units. For the
-#' actual TWFE regression, never-treated observations are assigned to the
-#' reference event time and event-time indicators are interacted with an
-#' ever-treated indicator. This keeps never-treated observations in the
-#' estimation sample as comparison observations while preventing them from
-#' generating event-time dummy coefficients.
+#' Standard errors for the cumulative event-study coefficients are obtained from
+#' the clustered variance-covariance matrix of the distributed-lag coefficients
+#' by the delta method (each event-study coefficient is a fixed linear
+#' combination of the distributed-lag coefficients).
 #'
-#' This is intended to be a *reference* model. It is **not** robust to
-#' treatment-effect heterogeneity and will be biased exactly in the cases
-#' where DCDH / PanelMatch / IFE differ from it -- which is precisely
-#' what makes it useful as a visual baseline.
+#' @references
+#' Schmidheiny, K., & Siegloch, S. (2023). On event studies and
+#' distributed-lags in two-way fixed effects models: Identification, equivalence,
+#' and generalization. *Journal of Applied Econometrics*, 38(5), 695-713.
 #'
-#' @examples
-#' \dontrun{
-#'   set.seed(1)
-#'   panel <- expand.grid(id = 1:40, t = 1:10)
-#'   panel$d <- rbinom(nrow(panel), 1, 0.3)
-#'   panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
-#'   ref <- naive_twfe(panel, outcome = "y", treatment = "d",
-#'                     unit = "id", time = "t",
-#'                     lags = 3, leads = 3)
-#'   ref
-#' }
+#' @examplesIf rlang::is_installed("fixest")
+#' df <- data.frame(
+#'   id = rep(1:4, each = 8),
+#'   yr = rep(1:8, times = 4),
+#'   d  = c(rep(0, 8),
+#'          0, 0, 1, 1, 1, 0, 0, 0,
+#'          0, 0, 0, 1, 1, 1, 1, 0,
+#'          rep(0, 8)),
+#'   y  = rnorm(32)
+#' )
+#' naive_twfe(df, outcome = "y", treatment = "d",
+#'            unit = "id", time = "yr", lags = 2, leads = 3)
+#'
 #' @export
 naive_twfe <- function(data, outcome, treatment, unit, time,
                        lags = 12L, leads = 6L,
@@ -125,62 +134,45 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
     )
   }
 
-  # We only need fixest for the actual fit; check after input validation
-  # so that user errors don't get masked by an "install fixest" message.
-  rlang::check_installed("fixest", reason = "to fit the naive TWFE reference.")
-
-  # Build raw relative-time variable.
-  # Never-treated units remain NA here by design.
-  data <- build_time_to_event(
-    data,
-    treatment = treatment,
-    unit = unit,
-    time = time
-  )
-
-  if (all(is.na(data$time_to_event))) {
+  if (!length(trt_values) || all(as.numeric(trt_values) == 0)) {
     cli::cli_abort(
       "No treated observations found in {.field {treatment}}; cannot estimate a TWFE event study."
     )
   }
 
-  # Keep never-treated observations in the regression sample.
-  #
-  # Raw time_to_event is NA for never-treated units. Passing that NA directly
-  # through fixest::i() is fragile and can drop comparison observations.
-  # Instead:
-  #   - mark ever-treated observations with .__nabs_ever = 1;
-  #   - set never-treated observations to the reference event time -1;
-  #   - interact event-time dummies with .__nabs_ever.
-  #
-  # This leaves never-treated observations in the model but with zero
-  # contribution to the event-time dummy columns.
-  data$.__nabs_ever <- as.integer(!is.na(data$time_to_event))
-  data$time_to_event <- ifelse(
-    data$.__nabs_ever == 1L,
-    data$time_to_event,
-    -1L
+  # We only need fixest for the actual fit; check after input validation so
+  # that user errors don't get masked by an "install fixest" message.
+  rlang::check_installed("fixest", reason = "to fit the naive TWFE reference.")
+
+  # Build the binned distributed-lag design (Schmidheiny & Siegloch 2023).
+  # Columns are named nabs_dl_p<k> (event time +k) and nabs_dl_m<k> (event
+  # time -k). Never-treated units are kept in the sample with all-zero (or
+  # within-unit-constant) design columns, so they serve as clean comparisons.
+  dl <- build_dl_design(
+    data,
+    treatment = treatment,
+    unit = unit,
+    time = time,
+    lags = lags,
+    leads = leads
   )
 
-  # Construct the fixest formula.
-  #
-  # IMPORTANT: estimate dummies for *all* event times; do NOT use fixest's
-  # `keep=` to restrict the window here. Restricting with `keep=` would leave
-  # the out-of-window treated observations in the sample, where they get
-  # absorbed into the reference category (-1) and bias every coefficient by a
-  # roughly constant amount. Estimating all event-time dummies keeps the
-  # reference period clean; the requested [-lags, leads] window is applied
-  # afterwards, by trimming the tidy output.
+  design <- dl$data
+  dl_cols <- names(dl$map)
+
+  if (!length(dl_cols)) {
+    cli::cli_abort(
+      "No treatment variation within the requested window; cannot estimate a TWFE event study."
+    )
+  }
+
   ctrl_part <- if (length(controls)) {
-    paste(" + ", paste(backtick_name(controls), collapse = " + "))
+    paste0(" + ", paste(backtick_name(controls), collapse = " + "))
   } else {
     ""
   }
 
-  rhs <- sprintf(
-    "i(time_to_event, .__nabs_ever, ref = -1)%s",
-    ctrl_part
-  )
+  rhs <- paste0(paste(dl_cols, collapse = " + "), ctrl_part)
 
   fml <- stats::as.formula(sprintf(
     "%s ~ %s | %s + %s",
@@ -192,26 +184,28 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
 
   fit <- fixest::feols(
     fml = fml,
-    data = data,
+    data = design,
     cluster = cluster
   )
 
-  out <- as_nabs_event_study(
-    fit,
+  # Cumulate the distributed-lag coefficients into the event-study path, with
+  # delta-method standard errors from the clustered VCOV.
+  es <- cumulate_dl(
+    estimate = stats::coef(fit),
+    vcov = stats::vcov(fit),
+    map = dl$map,
+    lags = lags,
+    leads = leads
+  )
+
+  out <- new_event_study_tbl(
+    time = es$time,
+    estimate = es$estimate,
+    std.error = es$std.error,
     method = "TWFE",
     outcome = outcome,
     conf.level = conf.level
   )
-
-  # Trim to the requested [-lags, leads] window. Coefficients are estimated
-  # for all event times (to keep the reference period uncontaminated), so the
-  # windowing happens here. Preserve the tibble's class and attributes, which
-  # `[` would otherwise drop.
-  cls <- class(out)
-  cl  <- attr(out, "conf.level")
-  out <- out[out$time >= -lags & out$time <= leads, , drop = FALSE]
-  class(out) <- cls
-  attr(out, "conf.level") <- cl
 
   attr(out, "fit") <- fit
 
@@ -223,14 +217,17 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
 #' @details
 #' ## fixest method
 #'
-#' Extracts coefficients on `time_to_event` interactions built by [naive_twfe()]
-#' with `fixest::i()`. Standard errors come from the model's clustered VCOV;
-#' confidence intervals use the normal approximation and `conf.level`.
+#' Extracts coefficients on `time_to_event` interactions of the form
+#' `time_to_event::<k>` or `time_to_event::<k>:<interaction>`, the coefficient
+#' names produced by `fixest::i()`. These are treated as event-study *levels*
+#' (the classic absorbing-treatment parametrisation). Standard errors come from
+#' the model's clustered VCOV; confidence intervals use the normal
+#' approximation and `conf.level`.
 #'
-#' If you call `as_nabs_event_study()` directly on a `fixest` object, the model
-#' must contain coefficients of the form `time_to_event::<k>` or
-#' `time_to_event::<k>:<interaction_variable>`. These are the coefficient-name
-#' patterns produced by `fixest::i()`.
+#' Note that [naive_twfe()] no longer fits this absorbing parametrisation
+#' itself -- it uses a distributed-lag design and performs the cumulation
+#' internally -- but this method is retained so that models you fit yourself
+#' with `fixest::i()` can still be tidied.
 #'
 #' @export
 as_nabs_event_study.fixest <- function(x, method = NULL, outcome = NA_character_,
@@ -248,9 +245,6 @@ as_nabs_event_study.fixest <- function(x, method = NULL, outcome = NA_character_
   # Accept both:
   #   time_to_event::-3
   #   time_to_event::-3:.__nabs_ever
-  #
-  # The second form is produced by:
-  #   i(time_to_event, .__nabs_ever, ref = -1, keep = ...)
   pat <- "^time_to_event::(-?[0-9]+)(:.*)?$"
   is_event <- grepl(pat, rn)
 
@@ -268,8 +262,6 @@ as_nabs_event_study.fixest <- function(x, method = NULL, outcome = NA_character_
   se <- ct[is_event, "Std. Error"]
 
   # Insert reference period t = -1 with beta = 0.
-  # fixest drops the reference category by construction, so it usually will
-  # not appear in the coefficient table.
   if (!any(t == -1L)) {
     t <- c(t, -1L)
     est <- c(est, 0)
@@ -288,73 +280,184 @@ as_nabs_event_study.fixest <- function(x, method = NULL, outcome = NA_character_
   )
 }
 
-# Build a per-unit "time_to_event" variable:
-#   time_to_event = time - first treated period for that unit.
+# Build the binned distributed-lag design from treatment changes.
 #
-# Never-treated units get NA throughout. This function intentionally returns
-# raw event time. The conversion needed for fixest estimation is handled inside
-# naive_twfe(), not here, so tests can still verify the raw relative-time logic.
-build_time_to_event <- function(data, treatment, unit, time) {
+# Implements the Schmidheiny & Siegloch (2023) distributed-lag parametrisation
+# for a (possibly non-absorbing) binary treatment:
+#
+#   * delta D_{it} = D_{it} - D_{i,t-1} is the within-unit first difference of
+#     treatment (the first observed period of each unit has delta D = 0).
+#   * Interior post-period columns (event times 0 .. leads-1) hold delta D at
+#     the corresponding lag: nabs_dl_p<k> = delta D_{i,t-k}.
+#   * The most distant post column (event time = leads) is "binned": it holds
+#     the treatment LEVEL D_{i,t-leads}, absorbing all longer-run effects.
+#   * Interior pre-period columns (event times -2 .. -(lags-1)) hold delta D at
+#     the corresponding lead: nabs_dl_m<k> = delta D_{i,t+k}.
+#   * The most distant pre column (event time = -lags) is binned as
+#     (D_{i,t+lags} - 1).
+#   * Event time -1 (lead 1) is the omitted reference period.
+#
+# Cumulating these coefficients (see cumulate_dl()) yields the event-study
+# level path. Columns that are identically zero across the whole sample (a
+# relative time no switch ever reaches) are dropped to avoid singularities.
+#
+# Returns list(data = <augmented data>, map = <named int vec col -> event time>).
+build_dl_design <- function(data, treatment, unit, time, lags, leads) {
   d <- data
+  n <- nrow(d)
 
-  d$.__nabs_rowid <- seq_len(nrow(d))
-  d$.__nabs_trt <- d[[treatment]]
-  d$.__nabs_unit <- d[[unit]]
-  d$.__nabs_time <- d[[time]]
+  u <- d[[unit]]
+  tm <- d[[time]]
 
-  # First treated period per unit.
-  # Treat any non-zero treatment as treated, so logical TRUE also works.
-  treated_rows <- d[
-    !is.na(d$.__nabs_trt) &
-      d$.__nabs_trt != 0 &
-      !is.na(d$.__nabs_time),
-    ,
-    drop = FALSE
-  ]
+  # 0/1 treatment as numeric; NA treatment is treated as untreated (0) so that
+  # never-changing rows contribute no spurious variation and stay in-sample.
+  trt <- as.numeric(d[[treatment]] != 0)
+  trt[is.na(trt)] <- 0
 
-  if (nrow(treated_rows) == 0L) {
-    d$time_to_event <- NA_integer_
+  # First difference within unit, ordered by time.
+  ord <- order(u, tm)
+  u_o <- u[ord]
+  trt_o <- trt[ord]
 
-    d$.__nabs_rowid <- NULL
-    d$.__nabs_trt <- NULL
-    d$.__nabs_unit <- NULL
-    d$.__nabs_time <- NULL
+  same_unit <- c(FALSE, u_o[-1L] == u_o[-length(u_o)])
+  prev <- c(NA_real_, trt_o[-length(trt_o)])
+  prev[!same_unit] <- NA_real_
 
-    return(d)
+  dD_o <- trt_o - prev
+  dD_o[is.na(dD_o)] <- 0
+
+  dD <- numeric(n)
+  dD[ord] <- dD_o
+
+  # (unit, time)-keyed look-ups for shifted delta D and treatment level.
+  key <- paste(u, tm, sep = "\r")
+  dD_by_key <- stats::setNames(dD, key)
+  D_by_key <- stats::setNames(trt, key)
+
+  fetch_dD <- function(offset) {
+    val <- unname(dD_by_key[paste(u, tm - offset, sep = "\r")])
+    val[is.na(val)] <- 0
+    as.numeric(val)
+  }
+  fetch_D <- function(offset) {
+    val <- unname(D_by_key[paste(u, tm - offset, sep = "\r")])
+    val[is.na(val)] <- 0
+    as.numeric(val)
   }
 
-  first_treat <- stats::aggregate(
-    .__nabs_time ~ .__nabs_unit,
-    data = treated_rows,
-    FUN = min
+  map <- integer(0)
+
+  add_col <- function(cn, ev, col) {
+    if (any(col != 0)) {
+      d[[cn]] <<- col
+      map[cn] <<- ev
+    }
+  }
+
+  # ---- Post periods (event times 0 .. leads) ----
+  if (leads >= 1L) {
+    for (k in 0:(leads - 1L)) {
+      add_col(sprintf("nabs_dl_p%d", k), k, fetch_dD(k))      # interior: delta D
+    }
+    add_col(sprintf("nabs_dl_p%d", leads), leads, fetch_D(leads)) # far bin: level
+  } else {
+    # leads == 0: the single contemporaneous term is the treatment level.
+    add_col("nabs_dl_p0", 0L, fetch_D(0L))
+  }
+
+  # ---- Pre periods (event times -2 .. -lags); -1 is the reference ----
+  if (lags >= 2L) {
+    if (lags >= 3L) {
+      for (k in 2:(lags - 1L)) {
+        add_col(sprintf("nabs_dl_m%d", k), -k, fetch_dD(-k))  # interior: delta D
+      }
+    }
+    # far bin: (level at t + lags) - 1
+    add_col(sprintf("nabs_dl_m%d", lags), -lags, fetch_D(-lags) - 1)
+  }
+
+  list(data = d, map = map)
+}
+
+# Cumulate distributed-lag coefficients into the event-study level path.
+#
+# Given the fitted coefficient vector and (clustered) VCOV, the column->event
+# map from build_dl_design(), and the window (lags, leads):
+#
+#   * post:  beta_h  =  sum_{k=0}^{h}    gamma(p k),   h = 0 .. leads
+#   * ref:   beta_-1 =  0
+#   * pre:   beta_-h = -sum_{k=2}^{h}    gamma(m k),   h = 2 .. lags
+#
+# Each beta is a fixed linear combination L of the gammas, so its standard
+# error is sqrt(diag(L V L')) (the delta method). The reference period gets
+# estimate 0 and standard error 0.
+#
+# Returns data.frame(time, estimate, std.error), ordered by time.
+cumulate_dl <- function(estimate, vcov, map, lags, leads) {
+  # Restrict to the distributed-lag coefficients we actually estimated.
+  keep <- intersect(names(map), names(estimate))
+  keep <- keep[!is.na(estimate[keep])]
+
+  gamma <- estimate[keep]
+  V <- vcov[keep, keep, drop = FALSE]
+
+  # Helper: name of the column at a given (sign, k), or NA if not estimated.
+  col_for <- function(prefix, k) {
+    cn <- sprintf("nabs_dl_%s%d", prefix, k)
+    if (cn %in% keep) cn else NA_character_
+  }
+
+  times <- integer(0)
+  rows <- list()
+
+  add_combo <- function(ev, cols, signs) {
+    L <- stats::setNames(numeric(length(keep)), keep)
+    for (j in seq_along(cols)) {
+      if (!is.na(cols[j])) L[cols[j]] <- L[cols[j]] + signs[j]
+    }
+    times[[length(times) + 1L]] <<- ev
+    rows[[length(rows) + 1L]] <<- L
+  }
+
+  # Post periods 0 .. leads: cumulative sum of p0 .. ph.
+  for (h in 0:leads) {
+    cols <- vapply(0:h, function(k) col_for("p", k), character(1))
+    add_combo(h, cols, rep(1, length(cols)))
+  }
+
+  # Pre periods -2 .. -lags: negative cumulative sum of m2 .. m|h|.
+  if (lags >= 2L) {
+    for (h in 2:lags) {
+      cols <- vapply(2:h, function(k) col_for("m", k), character(1))
+      add_combo(-h, cols, rep(-1, length(cols)))
+    }
+  }
+
+  Lmat <- do.call(rbind, rows)
+
+  if (length(keep)) {
+    est <- as.numeric(Lmat %*% gamma)
+    Vc <- Lmat %*% V %*% t(Lmat)
+    se <- sqrt(pmax(diag(Vc), 0))
+  } else {
+    est <- rep(0, length(times))
+    se <- rep(NA_real_, length(times))
+  }
+
+  times <- unlist(times)
+
+  # Reference period -1: estimate 0, SE 0.
+  times <- c(times, -1L)
+  est <- c(est, 0)
+  se <- c(se, 0)
+
+  ord <- order(times)
+  data.frame(
+    time = times[ord],
+    estimate = est[ord],
+    std.error = se[ord],
+    stringsAsFactors = FALSE
   )
-
-  names(first_treat) <- c(".__nabs_unit", ".__nabs_first_t")
-
-  d <- merge(
-    d,
-    first_treat,
-    by = ".__nabs_unit",
-    all.x = TRUE,
-    sort = FALSE
-  )
-
-  d <- d[order(d$.__nabs_rowid), , drop = FALSE]
-
-  d$time_to_event <- ifelse(
-    is.na(d$.__nabs_first_t),
-    NA_integer_,
-    as.integer(d$.__nabs_time - d$.__nabs_first_t)
-  )
-
-  # Tidy up.
-  d$.__nabs_rowid <- NULL
-  d$.__nabs_trt <- NULL
-  d$.__nabs_unit <- NULL
-  d$.__nabs_time <- NULL
-  d$.__nabs_first_t <- NULL
-
-  d
 }
 
 check_character_scalar <- function(x, arg) {

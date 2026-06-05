@@ -18,66 +18,76 @@ naive_twfe(
 )
 }
 \arguments{
-\item{data}{A data frame.}
+\item{data}{A data frame (panel) in long format.}
 
-\item{outcome}{Character. Outcome variable name.}
+\item{outcome, treatment, unit, time}{Character scalars naming the outcome,
+the 0/1 (or `FALSE`/`TRUE`) treatment indicator, the unit id, and the time
+variable.}
 
-\item{treatment}{Character. Treatment indicator variable name (0/1).}
+\item{lags}{Non-negative integer: number of pre-treatment periods (event
+times \eqn{-1, \dots, -\mathrm{lags}}) to report. Event time `-1` is the
+omitted reference.}
 
-\item{unit, time}{Character. Unit and time variable names.}
+\item{leads}{Non-negative integer: number of post-treatment periods (event
+times \eqn{0, \dots, \mathrm{leads}}) to report.}
 
-\item{leads, lags}{Integers giving the number of pre- and post-periods to
-estimate. Defaults `lags = 12`, `leads = 6` (the common ANES-style
-window). The reference period (-1) is dropped automatically.}
+\item{controls}{Optional character vector of additional control columns.}
 
-\item{controls}{Optional character vector of additional covariates to
-include linearly (no fixed effects).}
-
-\item{cluster}{Character. Variable name(s) to cluster standard errors on.
-Defaults to `unit`.}
+\item{cluster}{Character vector of column names to cluster standard errors
+on. Defaults to `unit`.}
 
 \item{conf.level}{Confidence level for the returned tibble. Default 0.95.}
 }
 \value{
-An `nabs_event_study_tbl` with `method = "TWFE"`.
+An `nabs_event_study_tbl` with `method = "TWFE"`. The fitted
+  `fixest` model is attached as the `"fit"` attribute.
 }
 \description{
-Runs a basic event-study TWFE regression of `outcome` on leads and lags
-of `treatment`, with unit and time fixed effects, using
-`fixest::feols()`. The result is **deliberately unsophisticated** --
-the point of `naive_twfe()` is to provide a reference series that can be
-overlaid in [nabs_event_plot()] (drawn in a neutral color by default) so the
-reader can see exactly what the heterogeneity-robust estimators are
-correcting against.
+Runs a basic event-study TWFE regression of `outcome` on leads and lags of
+the treatment, with unit and time fixed effects, using `fixest::feols()`.
+The result is **deliberately unsophisticated** -- the point of
+`nonabsdid` is to contrast this naive benchmark against heterogeneity-robust
+estimators (DCDH, `fect`, PanelMatch).
 }
 \details{
-Internally this builds a `time_to_event` variable
-(the difference between `time` and the first treated period for that unit)
-and estimates
-\deqn{Y_{it} = \alpha_i + \gamma_t + \sum_{k \neq -1} \beta_k 1\{R_{it} = k\} + X_{it}'\delta + \epsilon_{it}}
-with `fixest::feols()` via the `i()` operator.
+Unlike a classic event study, `naive_twfe()` does **not** assume the
+treatment is absorbing. It is built for binary treatments that can switch on
+*and off* over time (e.g. a policy that is repealed, a subsidy that lapses).
+Internally it uses the distributed-lag formulation of Schmidheiny and
+Siegloch (2023): the design is built from treatment *changes*
+\eqn{\Delta D_{it} = D_{it} - D_{i,t-1}}, with the most distant lead and lag
+"binned" using the treatment *level*, and the reported event-study path is
+the cumulative sum of the distributed-lag coefficients. This recovers the
+usual event-study plot when treatment happens to be absorbing, but stays
+correct when it is not.
 
-The raw `time_to_event` variable is `NA` for never-treated units. For the
-actual TWFE regression, never-treated observations are assigned to the
-reference event time and event-time indicators are interacted with an
-ever-treated indicator. This keeps never-treated observations in the
-estimation sample as comparison observations while preventing them from
-generating event-time dummy coefficients.
 
-This is intended to be a *reference* model. It is **not** robust to
-treatment-effect heterogeneity and will be biased exactly in the cases
-where DCDH / PanelMatch / IFE differ from it -- which is precisely
-what makes it useful as a visual baseline.
+The naming of `lags`/`leads` follows the package convention used elsewhere
+(and in the README): `lags` counts pre-periods, `leads` counts post-periods,
+so `lags = 6, leads = 8` yields event times on `[-6, 8]`.
+
+Standard errors for the cumulative event-study coefficients are obtained from
+the clustered variance-covariance matrix of the distributed-lag coefficients
+by the delta method (each event-study coefficient is a fixed linear
+combination of the distributed-lag coefficients).
 }
 \examples{
-\dontrun{
-  set.seed(1)
-  panel <- expand.grid(id = 1:40, t = 1:10)
-  panel$d <- rbinom(nrow(panel), 1, 0.3)
-  panel$y <- 0.4 * panel$d + rnorm(nrow(panel))
-  ref <- naive_twfe(panel, outcome = "y", treatment = "d",
-                    unit = "id", time = "t",
-                    lags = 3, leads = 3)
-  ref
+\dontshow{if (rlang::is_installed("fixest")) withAutoprint(\{ # examplesIf}
+df <- data.frame(
+  id = rep(1:4, each = 8),
+  yr = rep(1:8, times = 4),
+  d  = c(rep(0, 8),
+         0, 0, 1, 1, 1, 0, 0, 0,
+         0, 0, 0, 1, 1, 1, 1, 0,
+         rep(0, 8)),
+  y  = rnorm(32)
+)
+naive_twfe(df, outcome = "y", treatment = "d",
+           unit = "id", time = "yr", lags = 2, leads = 3)
+\dontshow{\}) # examplesIf}
 }
+\references{
+Schmidheiny, K., & Siegloch, S. (2023). On event studies and
+distributed-lags in two-way fixed effects models: Identification, equivalence,
+and generalization. *Journal of Applied Econometrics*, 38(5), 695-713.
 }

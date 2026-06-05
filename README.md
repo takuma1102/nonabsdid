@@ -108,7 +108,7 @@ Or call estimators directly and tidy their output:
 ```r
 fit <- DIDmultiplegtDYN::did_multiplegt_dyn(
   df = mydata, outcome = "y", group = "id", time = "t",
-  treatment = "d", effects = 8, placebo = 6
+  treatment = "d", effects = 9, placebo = 6
 )
 tidy_dcdh <- as_nabs_event_study(fit, outcome = "y")
 

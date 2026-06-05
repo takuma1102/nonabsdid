@@ -196,7 +196,7 @@ nabs_event_plot <- function(...,
       position = pos
     ) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-    ggplot2::geom_vline(xintercept = 0, linetype = "dotted", color = "grey50") +
+    ggplot2::geom_vline(xintercept = -1, linetype = "dotted", color = "grey50") +
     ggplot2::scale_color_manual(
       name   = NULL,
       values = pal,

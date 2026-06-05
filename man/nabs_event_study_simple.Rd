@@ -48,7 +48,7 @@ straight through to each estimator.}
 message before each estimator runs.}
 
 \item{...}{Forwarded to [nabs_event_plot()] (e.g. `xlim`, `ylim`,
-`palette`, `ylab`).}
+`palette`, `ylab`, `x_break_by`).}
 }
 \value{
 A list of class `"nabs_event_study_simple"` with elements:

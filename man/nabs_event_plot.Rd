@@ -18,6 +18,7 @@ nabs_event_plot(
   dodge = 0.5,
   point_size = 2.5,
   errorbar_width = 0.1,
+  x_break_by = 2,
   show_pre_post_legend = TRUE,
   xlab = "Relative time to treatment change",
   ylab = "Estimated effect",
@@ -68,6 +69,10 @@ series, so all series (including the naive TWFE reference) get their own
 evenly-spaced horizontal slot and their CIs do not overlap. Default `0.5`.}
 
 \item{point_size, errorbar_width}{Aesthetic controls for the geom layers.}
+
+\item{x_break_by}{Spacing between x-axis ticks (default 2, giving
+... -4, -2, 0, 2, 4, 6 ...). Event-study time is integer, so this
+avoids ggplot2's default half-integer breaks like 2.5.}
 
 \item{show_pre_post_legend}{Logical. Only relevant for
 `style = "prepost_color"`. If `TRUE`, the legend keys are labeled

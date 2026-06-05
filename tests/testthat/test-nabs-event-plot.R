@@ -54,29 +54,18 @@ test_that("nabs_event_plot errors on no input", {
   expect_error(nabs_event_plot(), "at least one")
 })
 
-test_that("x-axis uses even integer breaks, not half-integers", {
-  skip_if_not_installed("ggplot2")
-  d <- make_tbl("DCDH", -4:4, c(0, 0, 0, 0, 0.4, 0.5, 0.6, 0.6, 0.5))
-  g <- nabs_event_plot(d, xlim = c(-4, 4))
-
-  b <- ggplot2::ggplot_build(g)
-  brks <- b$layout$panel_params[[1]]$x$breaks
-  brks <- brks[!is.na(brks)]
-  # Event-study time is integer; ggplot2's default can land on 2.5.
+test_that("even_breaks gives even integer ticks with 0 on the grid", {
+  brks <- nonabsdid:::even_breaks(c(-4, 4), by = 2)
+  expect_equal(brks, c(-4, -2, 0, 2, 4))
   expect_true(all(brks %% 2 == 0))
-  # Zero must sit on the grid.
   expect_true(0 %in% brks)
 })
 
-test_that("x_break_by controls tick spacing", {
-  skip_if_not_installed("ggplot2")
-  d <- make_tbl("DCDH", -6:6, c(0, 0, 0, 0, 0, 0, 0, 0.3, 0.4, 0.5, 0.5, 0.4, 0.4))
-  g <- nabs_event_plot(d, xlim = c(-6, 6), x_break_by = 3)
-
-  b <- ggplot2::ggplot_build(g)
-  brks <- b$layout$panel_params[[1]]$x$breaks
-  brks <- brks[!is.na(brks)]
-  expect_true(all(brks %% 3 == 0))
+test_that("even_breaks respects the spacing argument and pads the range out", {
+  expect_equal(nonabsdid:::even_breaks(c(-6, 6), by = 3), c(-6, -3, 0, 3, 6))
+  # A range whose ends aren't multiples of `by` is rounded outward, never in,
+  # so the data window stays fully covered.
+  expect_equal(nonabsdid:::even_breaks(c(-5, 5), by = 2), c(-6, -4, -2, 0, 2, 4, 6))
 })
 
 test_that("x_break_by is forwarded through nabs_event_study_simple via ...", {

@@ -253,10 +253,7 @@ nabs_event_plot <- function(...,
   # can land on 2.5; event-study time is integer. Anchoring to multiples of
   # x_break_by keeps 0 on the grid.
   x_rng <- if (!is.null(xlim)) xlim else range(df$time, na.rm = TRUE)
-  brks  <- seq(floor(x_rng[1] / x_break_by) * x_break_by,
-               ceiling(x_rng[2] / x_break_by) * x_break_by,
-               by = x_break_by)
-  p <- p + ggplot2::scale_x_continuous(breaks = brks)
+  p <- p + ggplot2::scale_x_continuous(breaks = even_breaks(x_rng, x_break_by))
 
   if (!is.null(xlim) || !is.null(ylim)) {
     p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
@@ -265,6 +262,15 @@ nabs_event_plot <- function(...,
 }
 
 # ----- internal helpers ------------------------------------------------------
+
+# Even integer breaks for the x axis, anchored so 0 is always on the grid.
+# Event-study time is integer; ggplot2's default can land on half-integers
+# like 2.5. `rng` is a length-2 numeric (min, max); `by` is the tick spacing.
+even_breaks <- function(rng, by = 2) {
+  seq(floor(rng[1] / by) * by,
+      ceiling(rng[2] / by) * by,
+      by = by)
+}
 
 # Accept either bare nabs_event_study_tbl args or a single list of them.
 collect_event_studies <- function(dots) {

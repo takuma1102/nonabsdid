@@ -33,7 +33,7 @@
 #' @param verbose Logical; if `TRUE` (default), print a brief progress
 #'   message before each estimator runs.
 #' @param ... Forwarded to [nabs_event_plot()] (e.g. `xlim`, `ylim`,
-#'   `palette`, `ylab`).
+#'   `palette`, `ylab`, `x_break_by`).
 #'
 #' @return A list of class `"nabs_event_study_simple"` with elements:
 #'   \describe{

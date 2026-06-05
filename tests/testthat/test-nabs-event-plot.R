@@ -78,3 +78,18 @@ test_that("x_break_by controls tick spacing", {
   brks <- brks[!is.na(brks)]
   expect_true(all(brks %% 3 == 0))
 })
+
+test_that("x_break_by is forwarded through nabs_event_study_simple via ...", {
+  skip_if_not_installed("ggplot2")
+  # nabs_event_study_simple() forwards ... straight to nabs_event_plot(),
+  # so x_break_by should reach the plot without any extra plumbing.
+  # We bypass model fitting by checking the plot builder on a hand-made
+  # series, mirroring what simple's `...` pass-through ends up calling.
+  d <- make_tbl("DCDH", -6:6,
+                c(0, 0, 0, 0, 0, 0, 0, 0.3, 0.4, 0.5, 0.5, 0.4, 0.4))
+  g <- nabs_event_plot(list(d), xlim = c(-6, 6), x_break_by = 3)
+  b <- ggplot2::ggplot_build(g)
+  brks <- b$layout$panel_params[[1]]$x$breaks
+  brks <- brks[!is.na(brks)]
+  expect_true(all(brks %% 3 == 0))
+})

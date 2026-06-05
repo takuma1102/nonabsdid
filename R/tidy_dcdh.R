@@ -25,7 +25,7 @@ as_nabs_event_study.did_multiplegt_dyn <- function(x, method = NULL,
   se     <- if (has_se) pd[["SE"]] else NA_real_
 
   new_event_study_tbl(
-    time      = pd$Time,
+    time      = pd$Time -1L, # DCDH package uses 0 as the reference time, as opposed to other packages.
     estimate  = pd$Estimate,
     std.error = se,
     conf.low  = pd[["LB.CI"]],

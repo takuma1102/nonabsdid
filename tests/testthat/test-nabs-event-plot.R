@@ -53,3 +53,28 @@ test_that("nabs_event_plot accepts a named-vector palette override", {
 test_that("nabs_event_plot errors on no input", {
   expect_error(nabs_event_plot(), "at least one")
 })
+
+test_that("x-axis uses even integer breaks, not half-integers", {
+  skip_if_not_installed("ggplot2")
+  d <- make_tbl("DCDH", -4:4, c(0, 0, 0, 0, 0.4, 0.5, 0.6, 0.6, 0.5))
+  g <- nabs_event_plot(d, xlim = c(-4, 4))
+
+  b <- ggplot2::ggplot_build(g)
+  brks <- b$layout$panel_params[[1]]$x$breaks
+  brks <- brks[!is.na(brks)]
+  # Event-study time is integer; ggplot2's default can land on 2.5.
+  expect_true(all(brks %% 2 == 0))
+  # Zero must sit on the grid.
+  expect_true(0 %in% brks)
+})
+
+test_that("x_break_by controls tick spacing", {
+  skip_if_not_installed("ggplot2")
+  d <- make_tbl("DCDH", -6:6, c(0, 0, 0, 0, 0, 0, 0, 0.3, 0.4, 0.5, 0.5, 0.4, 0.4))
+  g <- nabs_event_plot(d, xlim = c(-6, 6), x_break_by = 3)
+
+  b <- ggplot2::ggplot_build(g)
+  brks <- b$layout$panel_params[[1]]$x$breaks
+  brks <- brks[!is.na(brks)]
+  expect_true(all(brks %% 3 == 0))
+})

@@ -93,7 +93,10 @@ run_dcdh <- function(data, outcome, treatment, unit, time,
     group     = unit,
     time      = time,
     treatment = treatment,
-    effects   = leads,
+    # +1: the tidier shifts DCDH's axis left by one (native reference at 0,
+    # ours at -1), so native Effect_(leads+1) is what lands at x = +leads.
+    # Without this, DCDH's post path stops one period short of the others.
+    effects   = leads + 1L,
     placebo   = lags,
     cluster   = cluster,
     controls  = controls,

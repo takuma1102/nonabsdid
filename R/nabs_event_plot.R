@@ -188,7 +188,7 @@ nabs_event_plot <- function(...,
   if (isTRUE(connect)) {
     p <- p +
       ggplot2::geom_line(
-        ggplot2::aes(alpha = .data$role, group = .data$seg),
+        ggplot2::aes(alpha = .data$role, group = .data$dgrp),
         linewidth = connect_linewidth,
         position  = pos,
         show.legend = FALSE

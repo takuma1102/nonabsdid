@@ -35,3 +35,15 @@ as_nabs_event_study.did_multiplegt_dyn <- function(x, method = NULL,
     conf.level = conf.level
   )
 }
+
+# did_multiplegt_dyn() validates `effects` / `placebo` by inspecting the
+# *unevaluated* argument, not its value. A bare numeric literal works; a
+# variable or arithmetic expression can be rejected even when it evaluates to a
+# valid positive integer:
+#
+#     "Syntax error in effects option. Positive integer required."
+#
+#   effects = 5            # OK    (bare numeric literal)   
+#   effects = 5L           # OK    (bare integer literal) 
+#   effects = leads + 1L   # can fail (arithmetic expression)  
+#   effects = my_var       # can fail (a variable) 

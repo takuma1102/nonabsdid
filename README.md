@@ -135,6 +135,9 @@ through `nabs_event_study_simple()` via `...`.
 By default (`style = "prepost_color"`), each method gets its own color with
 separate shades for pre- and post-treatment periods:
 
+![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example2_plot.png)
+
+
 ```r
 nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref)
 ```
@@ -142,6 +145,9 @@ nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref)
 With `style = "method_shape"`, color encodes the *method* only, and the
 pre/post distinction is carried by the marker shape (hollow circles for pre,
 filled triangles for post). This reads cleanly in grayscale:
+
+![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example2_plot_method_shape.png)
+
 
 ```r
 nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,

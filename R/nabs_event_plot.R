@@ -51,6 +51,9 @@
 #'   series, so all series (including the naive TWFE reference) get their own
 #'   evenly-spaced horizontal slot and their CIs do not overlap. Default `0.5`.
 #' @param point_size,errorbar_width Aesthetic controls for the geom layers.
+#' @param x_break_by Spacing between x-axis ticks (default 2, giving
+#'   ... -4, -2, 0, 2, 4, 6 ...). Event-study time is integer, so this
+#'   avoids ggplot2's default half-integer breaks like 2.5.
 #' @param show_pre_post_legend Logical. Only relevant for
 #'   `style = "prepost_color"`. If `TRUE`, the legend keys are labeled
 #'   `"<method>; pre"` / `"<method>; post"`. If `FALSE`, only one key per
@@ -87,6 +90,7 @@ nabs_event_plot <- function(...,
                        dodge = 0.5,
                        point_size = 2.5,
                        errorbar_width = 0.1,
+                       x_break_by = 2,
                        show_pre_post_legend = TRUE,
                        xlab = "Relative time to treatment change",
                        ylab = "Estimated effect",
@@ -245,10 +249,18 @@ nabs_event_plot <- function(...,
       )
   }
 
+  # Clean even integer ticks (... -4, -2, 0, 2, 4, 6 ...). ggplot2's default
+  # can land on 2.5; event-study time is integer. Anchoring to multiples of
+  # x_break_by keeps 0 on the grid.
+  x_rng <- if (!is.null(xlim)) xlim else range(df$time, na.rm = TRUE)
+  brks  <- seq(floor(x_rng[1] / x_break_by) * x_break_by,
+               ceiling(x_rng[2] / x_break_by) * x_break_by,
+               by = x_break_by)
+  p <- p + ggplot2::scale_x_continuous(breaks = brks)
+
   if (!is.null(xlim) || !is.null(ylim)) {
     p <- p + ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
   }
-
   p
 }
 

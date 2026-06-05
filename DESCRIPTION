@@ -10,7 +10,7 @@ Authors@R: c(
            comment = c(ORCID = "0009-0000-8782-4851"))
     )
 Description: Runs several heterogeneity-robust difference-in-differences (DID) event-study estimators
-for non-absorbing (i.e., allowing to switch on and off) binary treatments through their own packages,
+for non-absorbing (i.e., treatment can switch on and off) binary treatments through their own packages,
 harmonizes their output onto a common time axis and tidy data structure, and overlays them in a single
 'ggplot2' panel for visual comparison. 
 Supported estimators include those provided by 'DIDmultiplegtDYN', 'PanelMatch', and 'fect', with an 

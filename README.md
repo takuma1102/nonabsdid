@@ -204,6 +204,8 @@ All tidiers return a tibble of class `nabs_event_study_tbl` with these columns:
 | `method`    | chr     | `"DCDH"`, `"PanelMatch"`, `"IFE"`, `"FE"`, `"MC"`, `"TWFE"`, …   |
 | `outcome`   | chr     | Outcome variable name.                                           |
 
+All methods share this convention (`time = 0` = first treated period, `time = -1` = reference). DCDH's native output anchors the reference at `0`, so it is shifted by one period internally to line up.
+
 Anything coercible to a data frame with at least `time` and `estimate`
 columns also flows through `as_nabs_event_study()`. Adding a new estimator
 later means writing a one-line method that pulls the right slots — the

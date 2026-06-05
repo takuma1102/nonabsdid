@@ -158,6 +158,9 @@ Set `connect = TRUE` (works with either style) to join each series' point
 estimates with a thin line. Pre- and post-treatment segments are drawn
 separately, so the line is not joined across the treatment boundary:
 
+![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example_plot_method_shape_connect.png)
+
+
 ```r
 nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,
                 style = "method_shape", connect = TRUE)

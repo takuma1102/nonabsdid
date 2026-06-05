@@ -163,6 +163,14 @@ nabs_event_plot <- function(...,
     lbls[ref_key] <- paste0(ref_key, " (naive)")
   }
 
+   # Drop points outside the x window so connecting lines don't reach toward
+  # off-window points (coord_cartesian only zooms; it would still draw the
+  # partial segment out to a +5 point). Points/bars outside were clipped
+  # anyway, so this only removes the stray line.
+  if (!is.null(xlim)) {
+    df <- df[df$time >= min(xlim) & df$time <= max(xlim), , drop = FALSE]
+  }
+  
   pos <- ggplot2::position_dodge(width = dodge)
 
   p <- ggplot2::ggplot(

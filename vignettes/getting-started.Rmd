@@ -135,8 +135,9 @@ ref <- naive_twfe(sim, outcome = "y", treatment = "d",
                   lags = 4, leads = 6)
 ```
 
-The reference is built from treatment *changes* (a distributed-lag
-specification), so it handles the on/off treatment simulated above rather than
+The reference is the leads and lags of the treatment (a distributed-lag specification
+in levels), defined relative to a treatment change rather than to a single absorbing
+onset, so it handles the on/off treatment simulated above rather than
 assuming a single absorbing onset. It is still intended only as a reference:
 it is not robust to treatment-effect heterogeneity -- which is the point.
 Showing it next to the robust estimators makes the correction visible.

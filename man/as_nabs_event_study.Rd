@@ -126,10 +126,10 @@ names produced by `fixest::i()`. These are treated as event-study *levels*
 the model's clustered VCOV; confidence intervals use the normal
 approximation and `conf.level`.
 
-Note that [naive_twfe()] no longer fits this absorbing parametrisation
-itself -- it uses a distributed-lag design and performs the cumulation
-internally -- but this method is retained so that models you fit yourself
-with `fixest::i()` can still be tidied.
+Note that [naive_twfe()] does not fit this absorbing parametrisation itself
+-- it uses a distributed-lag design in treatment levels -- but this method is
+retained so that models you fit yourself with `fixest::i()` can still be
+tidied.
 
 ## fect method
 

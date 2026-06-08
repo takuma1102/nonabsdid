@@ -53,23 +53,24 @@ estimators (DCDH, `fect`, PanelMatch).
 Unlike a classic event study, `naive_twfe()` does **not** assume the
 treatment is absorbing. It is built for binary treatments that can switch on
 *and off* over time (e.g. a policy that is repealed, a subsidy that lapses).
-Internally it uses the distributed-lag formulation of Schmidheiny and
-Siegloch (2023): the design is built from treatment *changes*
-\eqn{\Delta D_{it} = D_{it} - D_{i,t-1}}, with the most distant lead and lag
-"binned" using the treatment *level*, and the reported event-study path is
-the cumulative sum of the distributed-lag coefficients. This recovers the
-usual event-study plot when treatment happens to be absorbing, but stays
-correct when it is not.
+It fits a distributed-lag TWFE in the treatment *levels*,
+\deqn{y_{it} = \alpha_i + \gamma_t + \sum_{k} \beta_k D_{i,t+k} + \varepsilon_{it},}
+i.e. the outcome on the leads and lags of the treatment indicator with unit
+and time fixed effects. The coefficient on lag `k` is reported at event
+time `+k` and the coefficient on lead `k` at event time `-k`, so the path is
+defined relative to a treatment *change* rather than to a single absorbing
+onset. Event time `-1` is the omitted reference. Each \eqn{\beta_k} is a
+partial correlation, not a heterogeneity-robust dynamic effect -- that is the
+point of the benchmark.
 
 
 The naming of `lags`/`leads` follows the package convention used elsewhere
 (and in the README): `lags` counts pre-periods, `leads` counts post-periods,
 so `lags = 6, leads = 8` yields event times on `[-6, 8]`.
 
-Standard errors for the cumulative event-study coefficients are obtained from
-the clustered variance-covariance matrix of the distributed-lag coefficients
-by the delta method (each event-study coefficient is a fixed linear
-combination of the distributed-lag coefficients).
+Coefficients and standard errors are read directly from the fitted model
+(clustered as requested); the reference period `-1` is reported as exactly
+zero.
 }
 \examples{
 \dontshow{if (rlang::is_installed("fixest")) withAutoprint(\{ # examplesIf}
@@ -85,9 +86,4 @@ df <- data.frame(
 naive_twfe(df, outcome = "y", treatment = "d",
            unit = "id", time = "yr", lags = 2, leads = 3)
 \dontshow{\}) # examplesIf}
-}
-\references{
-Schmidheiny, K., & Siegloch, S. (2023). On event studies and
-distributed-lags in two-way fixed effects models: Identification, equivalence,
-and generalization. *Journal of Applied Econometrics*, 38(5), 695-713.
 }

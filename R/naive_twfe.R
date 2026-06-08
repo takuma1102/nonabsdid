@@ -9,13 +9,15 @@
 #' Unlike a classic event study, `naive_twfe()` does **not** assume the
 #' treatment is absorbing. It is built for binary treatments that can switch on
 #' *and off* over time (e.g. a policy that is repealed, a subsidy that lapses).
-#' Internally it uses the distributed-lag formulation of Schmidheiny and
-#' Siegloch (2023): the design is built from treatment *changes*
-#' \eqn{\Delta D_{it} = D_{it} - D_{i,t-1}}, with the most distant lead and lag
-#' "binned" using the treatment *level*, and the reported event-study path is
-#' the cumulative sum of the distributed-lag coefficients. This recovers the
-#' usual event-study plot when treatment happens to be absorbing, but stays
-#' correct when it is not.
+#' It fits a distributed-lag TWFE in the treatment *levels*,
+#' \deqn{y_{it} = \alpha_i + \gamma_t + \sum_{k} \beta_k D_{i,t+k} + \varepsilon_{it},}
+#' i.e. the outcome on the leads and lags of the treatment indicator with unit
+#' and time fixed effects. The coefficient on lag `k` is reported at event
+#' time `+k` and the coefficient on lead `k` at event time `-k`, so the path is
+#' defined relative to a treatment *change* rather than to a single absorbing
+#' onset. Event time `-1` is the omitted reference. Each \eqn{\beta_k} is a
+#' partial correlation, not a heterogeneity-robust dynamic effect -- that is the
+#' point of the benchmark.
 #'
 #' @param data A data frame (panel) in long format.
 #' @param outcome,treatment,unit,time Character scalars naming the outcome,
@@ -39,15 +41,9 @@
 #' (and in the README): `lags` counts pre-periods, `leads` counts post-periods,
 #' so `lags = 6, leads = 8` yields event times on `[-6, 8]`.
 #'
-#' Standard errors for the cumulative event-study coefficients are obtained from
-#' the clustered variance-covariance matrix of the distributed-lag coefficients
-#' by the delta method (each event-study coefficient is a fixed linear
-#' combination of the distributed-lag coefficients).
-#'
-#' @references
-#' Schmidheiny, K., & Siegloch, S. (2023). On event studies and
-#' distributed-lags in two-way fixed effects models: Identification, equivalence,
-#' and generalization. *Journal of Applied Econometrics*, 38(5), 695-713.
+#' Coefficients and standard errors are read directly from the fitted model
+#' (clustered as requested); the reference period `-1` is reported as exactly
+#' zero.
 #'
 #' @examplesIf rlang::is_installed("fixest")
 #' df <- data.frame(
@@ -144,10 +140,9 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
   # that user errors don't get masked by an "install fixest" message.
   rlang::check_installed("fixest", reason = "to fit the naive TWFE reference.")
 
-  # Build the binned distributed-lag design (Schmidheiny & Siegloch 2023).
-  # Columns are named nabs_dl_p<k> (event time +k) and nabs_dl_m<k> (event
-  # time -k). Never-treated units are kept in the sample with all-zero (or
-  # within-unit-constant) design columns, so they serve as clean comparisons.
+  # Build the distributed-lag design in treatment levels. Columns are named
+  # nabs_dl_p<k> (event time +k) and nabs_dl_m<k> (event time -k). Never-treated
+  # units are kept in the sample with all-zero columns as clean comparisons.
   dl <- build_dl_design(
     data,
     treatment = treatment,
@@ -188,14 +183,11 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
     cluster = cluster
   )
 
-  # Cumulate the distributed-lag coefficients into the event-study path, with
-  # delta-method standard errors from the clustered VCOV.
-  es <- cumulate_dl(
+  # Read the per-period coefficients and (clustered) standard errors directly.
+  es <- collect_dl(
     estimate = stats::coef(fit),
-    vcov = stats::vcov(fit),
-    map = dl$map,
-    lags = lags,
-    leads = leads
+    se = sqrt(diag(stats::vcov(fit))),
+    map = dl$map
   )
 
   out <- new_event_study_tbl(
@@ -224,10 +216,10 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
 #' the model's clustered VCOV; confidence intervals use the normal
 #' approximation and `conf.level`.
 #'
-#' Note that [naive_twfe()] no longer fits this absorbing parametrisation
-#' itself -- it uses a distributed-lag design and performs the cumulation
-#' internally -- but this method is retained so that models you fit yourself
-#' with `fixest::i()` can still be tidied.
+#' Note that [naive_twfe()] does not fit this absorbing parametrisation itself
+#' -- it uses a distributed-lag design in treatment levels -- but this method is
+#' retained so that models you fit yourself with `fixest::i()` can still be
+#' tidied.
 #'
 #' @export
 as_nabs_event_study.fixest <- function(x, method = NULL, outcome = NA_character_,
@@ -280,65 +272,34 @@ as_nabs_event_study.fixest <- function(x, method = NULL, outcome = NA_character_
   )
 }
 
-# Build the binned distributed-lag design from treatment changes.
+# Build the distributed-lag design in treatment levels.
 #
-# Implements the Schmidheiny & Siegloch (2023) distributed-lag parametrisation
-# for a (possibly non-absorbing) binary treatment:
+# For event time h in -lags..leads (omitting the reference -1), creates one
+# column equal to the treatment indicator shifted by h:
 #
-#   * delta D_{it} = D_{it} - D_{i,t-1} is the within-unit first difference of
-#     treatment (the first observed period of each unit has delta D = 0).
-#   * Interior post-period columns (event times 0 .. leads-1) hold delta D at
-#     the corresponding lag: nabs_dl_p<k> = delta D_{i,t-k}.
-#   * The most distant post column (event time = leads) is "binned": it holds
-#     the treatment LEVEL D_{i,t-leads}, absorbing all longer-run effects.
-#   * Interior pre-period columns (event times -2 .. -(lags-1)) hold delta D at
-#     the corresponding lead: nabs_dl_m<k> = delta D_{i,t+k}.
-#   * The most distant pre column (event time = -lags) is binned as
-#     (D_{i,t+lags} - 1).
-#   * Event time -1 (lead 1) is the omitted reference period.
+#   * post period h (>= 0):  nabs_dl_p<h> = D_{i, t-h}   (lag h)
+#   * pre period -h (>= 2):  nabs_dl_m<h> = D_{i, t+h}   (lead h)
 #
-# Cumulating these coefficients (see cumulate_dl()) yields the event-study
-# level path. Columns that are identically zero across the whole sample (a
-# relative time no switch ever reaches) are dropped to avoid singularities.
+# NA treatment is read as untreated (0). Columns that are identically zero are
+# dropped. Never-treated units have all-zero columns and stay in the sample as
+# clean comparisons.
 #
 # Returns list(data = <augmented data>, map = <named int vec col -> event time>).
 build_dl_design <- function(data, treatment, unit, time, lags, leads) {
   d <- data
-  n <- nrow(d)
 
   u <- d[[unit]]
   tm <- d[[time]]
 
-  # 0/1 treatment as numeric; NA treatment is treated as untreated (0) so that
-  # never-changing rows contribute no spurious variation and stay in-sample.
+  # 0/1 treatment as numeric; NA treatment is treated as untreated (0).
   trt <- as.numeric(d[[treatment]] != 0)
   trt[is.na(trt)] <- 0
 
-  # First difference within unit, ordered by time.
-  ord <- order(u, tm)
-  u_o <- u[ord]
-  trt_o <- trt[ord]
-
-  same_unit <- c(FALSE, u_o[-1L] == u_o[-length(u_o)])
-  prev <- c(NA_real_, trt_o[-length(trt_o)])
-  prev[!same_unit] <- NA_real_
-
-  dD_o <- trt_o - prev
-  dD_o[is.na(dD_o)] <- 0
-
-  dD <- numeric(n)
-  dD[ord] <- dD_o
-
-  # (unit, time)-keyed look-ups for shifted delta D and treatment level.
+  # (unit, time)-keyed look-up so shifts respect the actual time index
+  # (robust to gaps in the panel).
   key <- paste(u, tm, sep = "\r")
-  dD_by_key <- stats::setNames(dD, key)
   D_by_key <- stats::setNames(trt, key)
 
-  fetch_dD <- function(offset) {
-    val <- unname(dD_by_key[paste(u, tm - offset, sep = "\r")])
-    val[is.na(val)] <- 0
-    as.numeric(val)
-  }
   fetch_D <- function(offset) {
     val <- unname(D_by_key[paste(u, tm - offset, sep = "\r")])
     val[is.na(val)] <- 0
@@ -354,108 +315,46 @@ build_dl_design <- function(data, treatment, unit, time, lags, leads) {
     }
   }
 
-  # ---- Post periods (event times 0 .. leads) ----
-  if (leads >= 1L) {
-    for (k in 0:(leads - 1L)) {
-      add_col(sprintf("nabs_dl_p%d", k), k, fetch_dD(k))      # interior: delta D
-    }
-    add_col(sprintf("nabs_dl_p%d", leads), leads, fetch_D(leads)) # far bin: level
-  } else {
-    # leads == 0: the single contemporaneous term is the treatment level.
-    add_col("nabs_dl_p0", 0L, fetch_D(0L))
+  # Post periods (event times 0 .. leads): treatment lagged by h.
+  for (h in 0:leads) {
+    add_col(sprintf("nabs_dl_p%d", h), h, fetch_D(h))
   }
 
-  # ---- Pre periods (event times -2 .. -lags); -1 is the reference ----
+  # Pre periods (event times -2 .. -lags); -1 is the omitted reference.
   if (lags >= 2L) {
-    if (lags >= 3L) {
-      for (k in 2:(lags - 1L)) {
-        add_col(sprintf("nabs_dl_m%d", k), -k, fetch_dD(-k))  # interior: delta D
-      }
+    for (h in 2:lags) {
+      add_col(sprintf("nabs_dl_m%d", h), -h, fetch_D(-h))
     }
-    # far bin: (level at t + lags) - 1
-    add_col(sprintf("nabs_dl_m%d", lags), -lags, fetch_D(-lags) - 1)
   }
 
   list(data = d, map = map)
 }
 
-# Cumulate distributed-lag coefficients into the event-study level path.
+# Collect the per-period distributed-lag coefficients into an event-study table.
 #
-# Given the fitted coefficient vector and (clustered) VCOV, the column->event
-# map from build_dl_design(), and the window (lags, leads):
-#
-#   * post:  beta_h  =  sum_{k=0}^{h}    gamma(p k),   h = 0 .. leads
-#   * ref:   beta_-1 =  0
-#   * pre:   beta_-h = -sum_{k=2}^{h}    gamma(m k),   h = 2 .. lags
-#
-# Each beta is a fixed linear combination L of the gammas, so its standard
-# error is sqrt(diag(L V L')) (the delta method). The reference period gets
-# estimate 0 and standard error 0.
+# Reads each estimated column's coefficient and standard error directly (no
+# cumulation), maps it to its event time, and appends the reference period -1
+# with estimate 0 and standard error 0.
 #
 # Returns data.frame(time, estimate, std.error), ordered by time.
-cumulate_dl <- function(estimate, vcov, map, lags, leads) {
-  # Restrict to the distributed-lag coefficients we actually estimated.
+collect_dl <- function(estimate, se, map) {
   keep <- intersect(names(map), names(estimate))
   keep <- keep[!is.na(estimate[keep])]
 
-  gamma <- estimate[keep]
-  V <- vcov[keep, keep, drop = FALSE]
-
-  # Helper: name of the column at a given (sign, k), or NA if not estimated.
-  col_for <- function(prefix, k) {
-    cn <- sprintf("nabs_dl_%s%d", prefix, k)
-    if (cn %in% keep) cn else NA_character_
-  }
-
-  times <- integer(0)
-  rows <- list()
-
-  add_combo <- function(ev, cols, signs) {
-    L <- stats::setNames(numeric(length(keep)), keep)
-    for (j in seq_along(cols)) {
-      if (!is.na(cols[j])) L[cols[j]] <- L[cols[j]] + signs[j]
-    }
-    times[[length(times) + 1L]] <<- ev
-    rows[[length(rows) + 1L]] <<- L
-  }
-
-  # Post periods 0 .. leads: cumulative sum of p0 .. ph.
-  for (h in 0:leads) {
-    cols <- vapply(0:h, function(k) col_for("p", k), character(1))
-    add_combo(h, cols, rep(1, length(cols)))
-  }
-
-  # Pre periods -2 .. -lags: negative cumulative sum of m2 .. m|h|.
-  if (lags >= 2L) {
-    for (h in 2:lags) {
-      cols <- vapply(2:h, function(k) col_for("m", k), character(1))
-      add_combo(-h, cols, rep(-1, length(cols)))
-    }
-  }
-
-  Lmat <- do.call(rbind, rows)
-
-  if (length(keep)) {
-    est <- as.numeric(Lmat %*% gamma)
-    Vc <- Lmat %*% V %*% t(Lmat)
-    se <- sqrt(pmax(diag(Vc), 0))
-  } else {
-    est <- rep(0, length(times))
-    se <- rep(NA_real_, length(times))
-  }
-
-  times <- unlist(times)
+  times <- unname(map[keep])
+  est <- unname(estimate[keep])
+  s <- unname(se[keep])
 
   # Reference period -1: estimate 0, SE 0.
   times <- c(times, -1L)
   est <- c(est, 0)
-  se <- c(se, 0)
+  s <- c(s, 0)
 
   ord <- order(times)
   data.frame(
     time = times[ord],
     estimate = est[ord],
-    std.error = se[ord],
+    std.error = s[ord],
     stringsAsFactors = FALSE
   )
 }

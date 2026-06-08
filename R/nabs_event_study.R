@@ -83,74 +83,83 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
 }
 
 # ----- internal estimator runners --------------------------------------------
-
 # ----------------------------------------------------------------------------
 # IMPORTANT — DIDmultiplegtDYN's `effects` / `placebo` and non-standard eval
 # ----------------------------------------------------------------------------
 # VERIFIED (DIDmultiplegtDYN 2.3.3): did_multiplegt_dyn() validates `effects`
-# and `placebo` by inspecting the *unevaluated* argument expression, not its
-# value. A bare numeric literal works; a variable or an arithmetic expression
-# is rejected even when it evaluates to a valid positive integer:
+# and `placebo` by inspecting the *unevaluated* call (it re-reads its own call
+# via match.call()/sys.call()), NOT the argument values. Only a bare numeric
+# literal in the source call passes; a variable, an arithmetic expression, OR a
+# value spliced in through do.call() all fail -- even when the value is a valid
+# positive integer:
 #
 #     "Syntax error in effects option. Positive integer required."
 #
-#   did_multiplegt_dyn(..., effects = 5)          # OK    (numeric literal)
-#   did_multiplegt_dyn(..., effects = leads + 1L) # FAILS (expression)
-#   did_multiplegt_dyn(..., effects = my_var)     # FAILS (variable)
+#   did_multiplegt_dyn(..., effects = 5)            # OK    (source literal)  [verified]
+#   did_multiplegt_dyn(..., effects = leads + 1L)   # FAILS (expression)      [verified]
+#   do.call(did_multiplegt_dyn, list(effects = 5L)) # FAILS (do.call splice)  [verified]
 #
-# The previous run_dcdh() passed `effects = leads + 1L` and `placebo = lags`
-# (an expression and a variable), so the DCDH path failed at RUNTIME on such
-# versions. R CMD check did not catch it: the @examples DCDH call is in
-# \dontrun{} and tests use skip_if_not_installed("DIDmultiplegtDYN"), so the
-# offending line is never evaluated; and `leads + 1L` is syntactically valid R,
-# so static checks stay green. The error only surfaces when the package's NSE
-# validator runs.
-#
-# FIX: never hand the package an expression or a symbol. We resolve the window
-# to plain integers and dispatch with do.call(), which splices the numeric
-# VALUES into the call it builds -- so the package's match.call()/substitute()
-# sees numeric constants, exactly like a hand-written literal.
-#
-# (If a future version still rejects do.call'd numerics, switch to building the
-# call from a parsed string where effects/placebo are written as literals:
-#   expr <- parse(text = sprintf("f(..., effects = %d, placebo = %d)", eff, pl))
-# Parsing guarantees literal constants no matter how the package introspects.)
+# FIX (works because it reproduces the verified-good form exactly): build the
+# call from a STRING in which effects/placebo appear as bare numeric literals,
+# then parse() + eval() it. After parsing, the call object holds literal numeric
+# constants for effects/placebo -- byte-for-byte identical to a hand-typed
+# `effects = 5`. All other arguments are NOT subject to NSE, so they are passed
+# by reference via a dedicated evaluation environment (no need to inline them).
 run_dcdh <- function(data, outcome, treatment, unit, time,
                      lags, leads, controls, cluster, ...) {
   rlang::check_installed("DIDmultiplegtDYN", reason = "to fit DCDH estimators.")
- 
+
   # +1: the tidier shifts DCDH's axis left by one (native reference at 0, ours
-  # at -1), so native Effect_(leads+1) is what lands at x = +leads. Resolve to a
-  # plain integer *here* (not in the call) so the call carries a value, not an
-  # expression.
+  # at -1), so native Effect_(leads+1) lands at x = +leads.
   eff <- as.integer(leads) + 1L
   pl  <- as.integer(lags)
- 
+
   if (is.na(eff) || eff <= 0L) {
     cli::cli_abort("DCDH needs a positive integer {.arg leads} (got {.val {leads}}).")
   }
   if (is.na(pl) || pl < 0L) {
     cli::cli_abort("DCDH needs a non-negative integer {.arg lags} (got {.val {lags}}).")
   }
- 
-  # do.call() builds the call with the numeric VALUES of eff/pl spliced in, so
-  # the NSE validator inside did_multiplegt_dyn sees literals, not `eff`/`pl`.
-  do.call(
-    DIDmultiplegtDYN::did_multiplegt_dyn,
-    c(
-      list(
-        df        = as.data.frame(data),
-        outcome   = outcome,
-        group     = unit,
-        time      = time,
-        treatment = treatment,
-        cluster   = cluster,
-        controls  = controls
-      ),
-      list(effects = eff, placebo = pl),
-      list(...)
-    )
+
+  # Evaluation environment: child of the package namespace (so
+  # `did_multiplegt_dyn` and internals resolve), holding our by-reference args.
+  env <- new.env(parent = asNamespace("DIDmultiplegtDYN"))
+  env$.df        <- as.data.frame(data)
+  env$.outcome   <- outcome
+  env$.group     <- unit
+  env$.time      <- time
+  env$.treatment <- treatment
+  env$.cluster   <- cluster
+  env$.controls  <- controls
+
+  # Named extra args (...). They are ordinary value arguments (not NSE), so we
+  # bind each into `env` under its own name and reference it by name in the call
+  # string. Unnamed dots are not supported (DCDH args are all named); error
+  # clearly if any are unnamed.
+  dots <- list(...)
+  extra_src <- ""
+  if (length(dots)) {
+    nm <- names(dots)
+    if (is.null(nm) || any(!nzchar(nm))) {
+      cli::cli_abort("Extra arguments to DCDH must be named.")
+    }
+    for (k in seq_along(dots)) {
+      vn <- paste0(".extra_", k)
+      assign(vn, dots[[k]], envir = env)
+      extra_src <- paste0(extra_src, sprintf(", %s = %s", nm[k], vn))
+    }
+  }
+
+  # Build the call with effects/placebo as BARE LITERALS in the source text.
+  code <- sprintf(
+    "did_multiplegt_dyn(df = .df, outcome = .outcome, group = .group,
+       time = .time, treatment = .treatment, cluster = .cluster,
+       controls = .controls, effects = %d, placebo = %d%s)",
+    eff, pl, extra_src
   )
+
+  expr <- parse(text = code)[[1]]
+  eval(expr, envir = env)
 }
 
 run_panelmatch <- function(data, outcome, treatment, unit, time,

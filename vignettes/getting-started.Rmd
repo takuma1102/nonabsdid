@@ -39,6 +39,13 @@ The estimator packages themselves (`DIDmultiplegtDYN`, `PanelMatch`, `fect`,
 `fixest`) are **suggested**, not required, so install only the ones you plan
 to use.
 
+A finished plot looks like this — several heterogeneity-robust estimators and
+the naive TWFE reference on one panel:
+
+```{r hero, echo = FALSE, out.width = "100%", fig.alt = "Comparison of heterogeneity-robust estimators vs naive TWFE"}
+knitr::include_graphics("figures/README_example2_plot_method_shape.png")
+```
+
 ## The 30-second version
 
 ```{r quick, eval = FALSE}
@@ -154,11 +161,44 @@ nabs_event_plot(
 )
 ```
 
+```{r plot-out, echo = FALSE, out.width = "100%", fig.alt = "Default prepost_color overlay of three estimators vs naive TWFE"}
+knitr::include_graphics("figures/README_example_plot.png")
+```
+
 The reference series is drawn in `grey20` (configurable via `reference_color`)
 and dashed, so it sits visually behind the main estimators. Pre-treatment
 periods get round markers; post-treatment get triangles. Each method gets its
 own color pair; the default palette is patterned after the conventions in
 applied DCDH/PanelMatch papers, with red shades pre and blue/green post.
+
+## Plot styles
+
+`nabs_event_plot()` offers two ways to encode the pre/post distinction, plus
+an option to join point estimates with a thin line. With
+`style = "method_shape"`, color encodes the *method* only and the pre/post
+split is carried by marker shape (hollow circles pre, filled triangles post),
+which reads cleanly in grayscale:
+
+```{r style-shape, echo = FALSE, out.width = "100%", fig.alt = "method_shape style: color by method, shape by pre/post"}
+knitr::include_graphics("figures/README_example_plot_method_shape.png")
+```
+
+```{r style-shape-code, eval = FALSE}
+nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,
+                style = "method_shape")
+```
+
+Set `connect = TRUE` (works with either style) to join each series' point
+estimates with a thin line through the full path:
+
+```{r style-connect, echo = FALSE, out.width = "100%", fig.alt = "method_shape style with connected point estimates"}
+knitr::include_graphics("figures/README_example_plot_method_shape_connect.png")
+```
+
+```{r style-connect-code, eval = FALSE}
+nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,
+                style = "method_shape", connect = TRUE)
+```
 
 ## Schema
 

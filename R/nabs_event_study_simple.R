@@ -59,6 +59,7 @@
 #'  if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE) &&
 #'      requireNamespace("polars", quietly = TRUE)) {
 #'   set.seed(1)
+#'   library(polars)
 #'   panel <- expand.grid(id = 1:60, t = 1:10)
 #'   panel$d <- with(panel, as.integer(
 #'     (id %% 4 == 1 & t %in% 4:7) |

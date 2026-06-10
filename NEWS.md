@@ -1,4 +1,4 @@
-# nonabsdid 0.3.1
+# nonabsdid 0.3.2
 
 * Initial CRAN release.
 * Supports DCDH, PanelMatch, and fect (IFE/FE/MC) event-study estimators

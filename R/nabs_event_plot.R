@@ -64,17 +64,23 @@
 #' @return A `ggplot` object.
 #'
 #' @examples
-#' \dontrun{
-#'   # Default: color encodes pre/post
-#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-#'                   reference = naive_twfe_tidy,
-#'                   xlim = c(-6, 6), ylim = c(-2, 2),
-#'                   ylab = "Effect on logged dollars")
+#' \donttest{
+#' dcdh_tidy <- tibble::tibble(
+#'   method = "DCDH",
+#'   time = -2:2,
+#'   estimate = c(-0.10, -0.05, 0.20, 0.35, 0.40),
+#'   std.error = rep(0.10, 5),
+#'   conf.low = estimate - 1.96 * std.error,
+#'   conf.high = estimate + 1.96 * std.error,
+#'   window = ifelse(time < 0, "pre", "post")
+#' )
+#' class(dcdh_tidy) <- c("nabs_event_study_tbl", class(dcdh_tidy))
 #'
-#'   # Color + shape both encode the method (shared across pre/post); join points
-#'   nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-#'                   style = "method_shape", connect = TRUE,
-#'                   reference = naive_twfe_tidy)
+#' ife_tidy <- dcdh_tidy
+#' ife_tidy$method <- "IFE"
+#' ife_tidy$estimate <- ife_tidy$estimate + 0.05
+#'
+#' nabs_event_plot(dcdh_tidy, ife_tidy, xlim = c(-2, 2))
 #' }
 #' @export
 nabs_event_plot <- function(...,

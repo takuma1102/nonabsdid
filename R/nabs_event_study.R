@@ -31,7 +31,7 @@
 #'   }
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   set.seed(1)
 #'   panel <- expand.grid(id = 1:40, t = 1:10)
 #'   panel$d <- rbinom(nrow(panel), 1, 0.3)

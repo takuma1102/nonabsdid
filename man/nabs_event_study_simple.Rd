@@ -86,7 +86,8 @@ there are too few clean controls in the lag window) are caught, reported
 as a warning, and the remaining estimators continue.
 }
 \examples{
-if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) {
+ if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE) &&
+     requireNamespace("polars", quietly = TRUE)) {
   set.seed(1)
   panel <- expand.grid(id = 1:60, t = 1:10)
   panel$d <- with(panel, as.integer(

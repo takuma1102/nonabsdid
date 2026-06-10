@@ -61,7 +61,8 @@ What it does cover:
 }
 }
 \examples{
-if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) {
+ if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE) &&
+     requireNamespace("polars", quietly = TRUE)) {
   set.seed(1)
   panel <- expand.grid(id = 1:60, t = 1:10)
   panel$d <- with(panel, as.integer(

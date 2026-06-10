@@ -30,7 +30,12 @@
 #'     \item{`call`}{The call that produced it.}
 #'   }
 #'
-
+#' @examples
+#' if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) {
+#'   ...
+#'   res_dcdh <- nabs_event_study(...)
+#'   res_dcdh$tidy
+#' }
 #' @export
 nabs_event_study <- function(data, outcome, treatment, unit, time,
                         method = c("DCDH", "PanelMatch", "IFE", "FE", "MC"),

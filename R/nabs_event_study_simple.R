@@ -55,7 +55,31 @@
 #' there are too few clean controls in the lag window) are caught, reported
 #' as a warning, and the remaining estimators continue.
 #'
-
+#' @examples
+#' if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) {
+#'   set.seed(1)
+#'   panel <- expand.grid(id = 1:60, t = 1:10)
+#'   panel$d <- with(panel, as.integer(
+#'     (id %% 4 == 1 & t %in% 4:7) |
+#'     (id %% 4 == 2 & t %in% 5:8) |
+#'     (id %% 4 == 3 & t %in% 6:9)
+#'   ))
+#'   panel$y <- 0.2 * panel$t + 0.5 * panel$d + rnorm(nrow(panel))
+#'
+#'   res <- nabs_event_study_simple(
+#'     panel,
+#'     outcome = "y",
+#'     treatment = "d",
+#'     unit = "id",
+#'     time = "t",
+#'     methods = "DCDH",
+#'     include_twfe = FALSE,
+#'     lags = 2,
+#'     leads = 2,
+#'     verbose = FALSE
+#'   )
+#'   res$tidy
+#' }
 #' @export
 nabs_event_study_simple <- function(data, outcome, treatment, unit, time,
                                     methods = c("DCDH", "PanelMatch", "IFE"),

@@ -107,16 +107,26 @@ Set `connect = TRUE` to join each series' point estimates with a thin line,
 in addition to the points and error bars.
 }
 \examples{
-\dontrun{
-  # Default: color encodes pre/post
-  nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-                  reference = naive_twfe_tidy,
-                  xlim = c(-6, 6), ylim = c(-2, 2),
-                  ylab = "Effect on logged dollars")
+dcdh_tidy <- as_nabs_event_study(
+  data.frame(
+    time = -2:3,
+    estimate = c(-0.06, -0.02, 0.10, 0.22, 0.28, 0.31),
+    std.error = 0.08
+  ),
+  method = "DCDH",
+  outcome = "y"
+)
 
-  # Color + shape both encode the method (shared across pre/post); join points
-  nabs_event_plot(dcdh_tidy, panelmatch_tidy, ife_tidy,
-                  style = "method_shape", connect = TRUE,
-                  reference = naive_twfe_tidy)
-}
+ife_tidy <- as_nabs_event_study(
+  data.frame(
+    time = -2:3,
+    estimate = c(-0.04, 0.00, 0.08, 0.18, 0.25, 0.27),
+    std.error = 0.10
+  ),
+  method = "IFE",
+  outcome = "y"
+)
+
+nabs_event_plot(dcdh_tidy, ife_tidy, xlim = c(-2, 3))
+nabs_event_plot(dcdh_tidy, ife_tidy, style = "method_shape", connect = TRUE)
 }

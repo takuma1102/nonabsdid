@@ -1,7 +1,7 @@
 Package: nonabsdid
 Type: Package
 Title: Visualize Heterogeneity-Robust Event Studies for Non-Absorbing Treatments
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(
     person(given = "Takuma",
            family = "Iwasaki",
@@ -15,17 +15,17 @@ Description: Runs several heterogeneity-robust difference-in-differences (DID) e
     'ggplot2' panel for visual comparison. 
     Supported estimators include those provided by 'DIDmultiplegtDYN', 'PanelMatch', and 'fect', with an 
     optional naive two-way fixed-effects reference series via 'fixest'. The underlying methods are respectively described in
-    Clément de Chaisemartin and Xavier D’Haultfœuille. "Difference-in-Differences Estimators of Intertemporal Treatment Effects."
+    Clement de Chaisemartin and Xavier D'Haultfoeuille. "Difference-in-Differences Estimators of Intertemporal Treatment Effects."
     The Review of Economics and Statistics (2026) <doi:10.1162/rest_a_01414>,
     Kosuke Imai, In Song Kim, and Erik H. Wang. "Matching methods for causal inference with time‐series cross‐sectional data." 
     American Journal of Political Science 67.3 (2023) <doi:10.1111/ajps.12685>,
     Licheng Liu, Ye Wang, and Yiqing Xu. "A practical guide to counterfactual estimators for causal inference
     with time‐series cross‐sectional data." American Journal of Political Science 68.1 (2024) <doi:10.1111/ajps.12723>, and
-    Laurent R. Bergé, Kyle Butts, and Grant McDermott. "Fast and user-friendly econometrics estimations: The R package fixest."
-    arXiv preprint arXiv:2601.21749 (2026) <doi:10.48550/arXiv.2601.21749>.
+    Laurent R. Bergé, Kyle Butts, and Grant McDermott. "Fast and user-friendly econometrics estimations: The R package 'fixest'."
+    arXiv preprint (2026) <doi:10.48550/arXiv.2601.21749>.
     A single nabs_event_study() wrapper runs any supported estimator with a common interface;
     nabs_event_study_simple() provides a one-line front door for quick exploratory runs;
-    the S3 generic as_nabs_event_study() coerces estimator output into a tidy tibble with a stable schema;
+    the S3 generic as_nabs_event_study() coerces estimator output into a tidy stable schema;
     and nabs_event_plot() overlays multiple methods on a single 'ggplot2' panel, with optional naive two-way
     fixed effects drawn in a neutral color as a reference.
 License: MIT + file LICENSE

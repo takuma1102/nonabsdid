@@ -35,29 +35,7 @@
 #' )
 #' tidy_fit <- as_nabs_event_study(raw, method = "DCDH", outcome = "y")
 #' tidy_fit
-#'
-#' # With the DCDH estimator installed, coerce its native object directly.
-#' if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE)) {
-#'   set.seed(1)
-#'   panel <- expand.grid(id = 1:60, t = 1:10)
-#'   panel$d <- with(panel, as.integer(
-#'     (id %% 4 == 1 & t %in% 4:7) |
-#'     (id %% 4 == 2 & t %in% 5:8) |
-#'     (id %% 4 == 3 & t %in% 6:9)
-#'   ))
-#'   panel$y <- 0.2 * panel$t + 0.5 * panel$d + rnorm(nrow(panel))
-#'
-#'   fit <- DIDmultiplegtDYN::did_multiplegt_dyn(
-#'     df = panel,
-#'     outcome = "y",
-#'     group = "id",
-#'     time = "t",
-#'     treatment = "d",
-#'     effects = 3,
-#'     placebo = 2
-#'   )
-#'   as_nabs_event_study(fit, outcome = "y")
-#' }
+
 #' @export
 as_nabs_event_study <- function(x, method = NULL, outcome = NA_character_,
                            conf.level = 0.95, ...) {

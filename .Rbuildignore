@@ -10,3 +10,4 @@
 ^CRAN-RELEASE$
 ^\.lintr$
 ^man/figures/\.gitkeep$
+^CRAN-SUBMISSION$

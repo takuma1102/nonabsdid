@@ -1,7 +1,7 @@
 Package: nonabsdid
 Type: Package
 Title: Visualize Heterogeneity-Robust Event Studies for Non-Absorbing Treatments
-Version: 0.3.0.9003
+Version: 0.3.1
 Authors@R: c(
     person(given = "Takuma",
            family = "Iwasaki",

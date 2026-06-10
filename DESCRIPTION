@@ -15,10 +15,10 @@ Description: Runs several heterogeneity-robust difference-in-differences (DID) e
     'ggplot2' panel for visual comparison. 
     Supported estimators include those provided by 'DIDmultiplegtDYN', 'PanelMatch', and 'fect', with an 
     optional naive two-way fixed-effects reference series via 'fixest'.
-    A single 'nabs_event_study()' wrapper runs any supported estimator with a common interface;
-    'nabs_event_study_simple()' provides a one-line front door for quick exploratory runs;
-    the S3 generic 'as_nabs_event_study()' coerces estimator output into a tidy tibble with a stable schema;
-    and 'nabs_event_plot()' overlays multiple methods on a single 'ggplot2' panel, with optional naive two-way
+    A single nabs_event_study() wrapper runs any supported estimator with a common interface;
+    nabs_event_study_simple() provides a one-line front door for quick exploratory runs;
+    the S3 generic as_nabs_event_study() coerces estimator output into a tidy tibble with a stable schema;
+    and nabs_event_plot() overlays multiple methods on a single 'ggplot2' panel, with optional naive two-way
     fixed effects drawn in a neutral color as a reference.
 License: MIT + file LICENSE
 Encoding: UTF-8

@@ -45,10 +45,15 @@ test_that("nabs_event_study_simple errors gracefully when no estimator is availa
   # are installed, so every method is skipped. We expect a clean error
   # rather than a confusing crash.
   estimator_pkgs <- c("DIDmultiplegtDYN", "PanelMatch", "fect")
-  if (any(vapply(estimator_pkgs, requireNamespace, logical(1), quietly = TRUE))) {
-    skip("At least one estimator package is available; skipping no-estimator path test.")
+
+  is_installed <- function(pkg) {
+  nzchar(system.file(package = pkg))
   }
-  
+
+  if (any(vapply(estimator_pkgs, is_installed, logical(1)))) {
+    skip("At least one estimator package is installed; skipping no-estimator path test.")
+  }
+    
   set.seed(2)
   d <- expand.grid(id = 1:10, t = 1:6)
   d$y <- rnorm(nrow(d))

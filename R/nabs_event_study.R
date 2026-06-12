@@ -14,7 +14,8 @@
 #'   \item Reasonable defaults that match the three packages' typical use.
 #' }
 #'
-#' @param data A panel data frame.
+#' @param data A panel data frame, or a path to a Stata `.dta` file (which
+#'   is read via [nabs_read_dta()] with default settings).
 #' @param outcome,treatment,unit,time Character column names.
 #' @param method One of `"DCDH"`, `"PanelMatch"`, `"IFE"`.
 #' @param lags,leads Integer pre- and post-period lengths.
@@ -22,6 +23,11 @@
 #' @param cluster Character; cluster variable. Defaults to `unit`.
 #' @param conf.level Confidence level for the tidied output. Default 0.95.
 #' @param ... Extra arguments passed straight to the underlying estimator.
+#'   Stata-style aliases are also accepted here and translated with an
+#'   informative message: `df` (for `data`), `group` (for `unit`),
+#'   `placebo` (for `lags`), and `effects` (for `leads`; note
+#'   `leads = effects - 1`, because nonabsdid places treatment onset at
+#'   relative time 0). See the "nonabsdid for Stata users" vignette.
 #'
 #' @return A list of class `"nabs_event_study_result"` with elements:
 #'   \describe{
@@ -66,18 +72,43 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
   method <- match.arg(method)
   call <- match.call()
 
+  # Stata-style aliases (df/group/effects/placebo) supplied through `...`
+  # are translated onto the canonical arguments; see translate_stata_dots().
+  st <- translate_stata_dots(
+    list(...),
+    have = list(
+      data  = !missing(data),
+      unit  = !missing(unit),
+      lags  = !missing(lags),
+      leads = !missing(leads)
+    )
+  )
+  if (!is.null(st$values$data))  data  <- st$values$data
+  if (!is.null(st$values$unit))  unit  <- st$values$unit
+  if (!is.null(st$values$lags))  lags  <- st$values$lags
+  if (!is.null(st$values$leads)) leads <- st$values$leads
+  dots <- st$dots
+
+  # `data` may also be a path to a .dta file.
+  data <- resolve_panel_data(data)
+
   fit <- switch(
     method,
-    DCDH       = run_dcdh(data, outcome, treatment, unit, time,
-                          lags, leads, controls, cluster, ...),
-    PanelMatch = run_panelmatch(data, outcome, treatment, unit, time,
-                                lags, leads, controls, ...),
-    IFE        = run_fect(data, outcome, treatment, unit, time,
-                          controls, fect_method = "ife", ...),
-    FE         = run_fect(data, outcome, treatment, unit, time,
-                          controls, fect_method = "fe", ...),
-    MC         = run_fect(data, outcome, treatment, unit, time,
-                          controls, fect_method = "mc", ...)
+    DCDH       = do.call(run_dcdh,
+                         c(list(data, outcome, treatment, unit, time,
+                                lags, leads, controls, cluster), dots)),
+    PanelMatch = do.call(run_panelmatch,
+                         c(list(data, outcome, treatment, unit, time,
+                                lags, leads, controls), dots)),
+    IFE        = do.call(run_fect,
+                         c(list(data, outcome, treatment, unit, time,
+                                controls, fect_method = "ife"), dots)),
+    FE         = do.call(run_fect,
+                         c(list(data, outcome, treatment, unit, time,
+                                controls, fect_method = "fe"), dots)),
+    MC         = do.call(run_fect,
+                         c(list(data, outcome, treatment, unit, time,
+                                controls, fect_method = "mc"), dots))
   )
 
   tidy <- if (method == "PanelMatch") {

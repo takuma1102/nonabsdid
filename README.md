@@ -166,6 +166,31 @@ nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,
                 style = "method_shape", connect = TRUE)
 ```
 
+## For Stata users
+
+`nonabsdid` ships first-class Stata interoperability:
+
+``` r
+# Read a .dta directly (labelled columns and .a-.z missings handled),
+# or just pass the path straight to the wrappers:
+mydata <- nabs_read_dta("mypanel.dta")
+res    <- nabs_event_study_simple("mypanel.dta",
+                                  outcome = "y", treatment = "d",
+                                  unit = "id", time = "t")
+
+# Stata-style argument names from did_multiplegt_dyn are accepted and
+# translated with a message (group -> unit, effects -> leads, placebo -> lags):
+res <- nabs_event_study(mydata, outcome = "y", treatment = "d", time = "t",
+                        method = "DCDH",
+                        group = "id", effects = 8, placebo = 6)
+
+# Write the tidy estimates back out for a Stata-using coauthor:
+nabs_write_dta(res$tidy, "event_study_results.dta")
+```
+
+See `vignette("nonabsdid-for-stata-users")` for the full option-by-option
+mapping from `did_multiplegt_dyn` and the round trip back to `twoway`.
+
 ## Working from existing results
 
 If you have already run supported estimators, you can convert their result

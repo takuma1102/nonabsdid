@@ -1,7 +1,7 @@
 Package: nonabsdid
 Type: Package
 Title: Visualize Heterogeneity-Robust Event Studies for Non-Absorbing Treatments
-Version: 0.3.2
+Version: 0.3.2.9000
 Authors@R: c(
     person(given = "Takuma",
            family = "Iwasaki",
@@ -45,6 +45,7 @@ Suggests:
     PanelMatch,
     fect,
     fixest,
+    haven,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),

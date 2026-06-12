@@ -12,7 +12,8 @@
 #' the picture quickly*; for a careful, publication-ready result, switch
 #' to [nabs_event_study()] and tune options per estimator.
 #'
-#' @param data A panel data frame.
+#' @param data A panel data frame, or a path to a Stata `.dta` file (which
+#'   is read via [nabs_read_dta()] with default settings).
 #' @param outcome,treatment,unit,time Character column names. The treatment
 #'   column should be a 0/1 indicator (it is allowed to switch back to 0,
 #'   i.e. non-absorbing).
@@ -33,7 +34,11 @@
 #' @param verbose Logical; if `TRUE` (default), print a brief progress
 #'   message before each estimator runs.
 #' @param ... Forwarded to [nabs_event_plot()] (e.g. `xlim`, `ylim`,
-#'   `palette`, `ylab`, `x_break_by`).
+#'   `palette`, `ylab`, `x_break_by`). Stata-style aliases are also
+#'   accepted here and translated with an informative message: `df` (for
+#'   `data`), `group` (for `unit`), `placebo` (for `lags`), and `effects`
+#'   (for `leads`; note `leads = effects - 1`). See the "nonabsdid for
+#'   Stata users" vignette.
 #'
 #' @return A list of class `"nabs_event_study_simple"` with elements:
 #'   \describe{
@@ -91,6 +96,27 @@ nabs_event_study_simple <- function(data, outcome, treatment, unit, time,
                                     verbose = TRUE,
                                     ...) {
   call <- match.call()
+
+  # Stata-style aliases (df/group/effects/placebo) supplied through `...`
+  # are translated onto the canonical arguments; see translate_stata_dots().
+  st <- translate_stata_dots(
+    list(...),
+    have = list(
+      data  = !missing(data),
+      unit  = !missing(unit),
+      lags  = !is.null(lags),
+      leads = !is.null(leads)
+    ),
+    quiet = !isTRUE(verbose)
+  )
+  if (!is.null(st$values$data))  data  <- st$values$data
+  if (!is.null(st$values$unit))  unit  <- st$values$unit
+  if (!is.null(st$values$lags))  lags  <- st$values$lags
+  if (!is.null(st$values$leads)) leads <- st$values$leads
+  dots <- st$dots
+
+  # `data` may also be a path to a .dta file.
+  data <- resolve_panel_data(data)
 
   # Basic input check -- catches common mistakes early without requiring
   # any of the suggested packages to be installed.
@@ -211,9 +237,10 @@ nabs_event_study_simple <- function(data, outcome, treatment, unit, time,
 
   combined <- bind_event_studies(per_method)
 
-  plot <- nabs_event_plot(per_method,
-                          reference = twfe,
-                          ...)
+  plot <- do.call(
+    nabs_event_plot,
+    c(list(per_method, reference = twfe), dots)
+  )
 
   structure(
     list(

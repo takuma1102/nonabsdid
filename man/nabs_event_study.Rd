@@ -20,7 +20,8 @@ nabs_event_study(
 )
 }
 \arguments{
-\item{data}{A panel data frame.}
+\item{data}{A panel data frame, or a path to a Stata `.dta` file (which
+is read via [nabs_read_dta()] with default settings).}
 
 \item{outcome, treatment, unit, time}{Character column names.}
 
@@ -34,7 +35,12 @@ nabs_event_study(
 
 \item{conf.level}{Confidence level for the tidied output. Default 0.95.}
 
-\item{...}{Extra arguments passed straight to the underlying estimator.}
+\item{...}{Extra arguments passed straight to the underlying estimator.
+Stata-style aliases are also accepted here and translated with an
+informative message: `df` (for `data`), `group` (for `unit`),
+`placebo` (for `lags`), and `effects` (for `leads`; note
+`leads = effects - 1`, because nonabsdid places treatment onset at
+relative time 0). See the "nonabsdid for Stata users" vignette.}
 }
 \value{
 A list of class `"nabs_event_study_result"` with elements:

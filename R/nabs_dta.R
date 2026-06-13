@@ -100,19 +100,23 @@ nabs_read_dta <- function(path,
   out <- haven::read_dta(path, encoding = encoding, ...)
 
   # --- extended missing values (.a-.z arrive as tagged NA) -------------------
+  # zap_missing() clears missing *labels* on labelled vectors, but does NOT
+  # strip tags from a plain double that carries tagged NAs directly (the
+  # common case for a numeric column read from a .dta). So replace tagged
+  # elements with regular NA explicitly; this is robust to column type and
+  # to haven's storage details.
   has_tagged <- function(col) {
-    # is_tagged_na() is only meaningful for doubles; anything else can't
-    # carry a Stata extended-missing tag. Guard so odd column types (e.g.
-    # labelled integers) never error here.
     if (!is.double(col)) return(FALSE)
     isTRUE(any(haven::is_tagged_na(col)))
   }
-  n_tagged_cols <- sum(vapply(out, has_tagged, logical(1L)))
-  if (missings == "na") {
-    # zap_missing() is cheap and a no-op when there's nothing to zap, so we
-    # always call it under the default; n_tagged_cols is only used for the
-    # summary message.
-    out <- haven::zap_missing(out)
+  tagged_flags <- vapply(out, has_tagged, logical(1L))
+  n_tagged_cols <- sum(tagged_flags)
+  if (missings == "na" && n_tagged_cols > 0L) {
+    for (j in which(tagged_flags)) {
+      col <- out[[j]]
+      col[haven::is_tagged_na(col)] <- NA_real_
+      out[[j]] <- col
+    }
   }
 
   # --- value-labelled columns -------------------------------------------------

@@ -79,7 +79,9 @@ test_that("nabs_write_dta writes a tidy table with Stata-valid names", {
                        "conf_low", "conf_high",
                        "window", "method", "outcome"))
   expect_equal(nrow(back), 5L)
-  expect_equal(back$estimate, tidy$estimate)
+  # read_dta() stamps a `format.stata` attribute on numeric columns; compare
+  # the underlying values only.
+  expect_equal(as.numeric(back$estimate), tidy$estimate)
 })
 
 test_that("nabs_write_dta returns the path invisibly", {

@@ -118,9 +118,15 @@ preflight_panel <- function(data, outcome, treatment, unit, time,
 
   # 2. Treatment is a 0/1 (or FALSE/TRUE) indicator.
   tv <- data[[treatment]]
-  uvals <- unique(tv[!is.na(tv)])
-  uvals_num <- suppressWarnings(as.numeric(as.character(uvals)))
-  if (length(uvals) && (anyNA(uvals_num) || !all(uvals_num %in% c(0, 1)))) {
+  if (is.logical(tv)) {
+    ok <- TRUE   # logical is, by definition, a 0/1 indicator
+  } else {
+    uvals     <- unique(tv[!is.na(tv)])
+    uvals_num <- suppressWarnings(as.numeric(as.character(uvals)))
+    ok <- length(uvals) == 0L ||
+      (!anyNA(uvals_num) && all(uvals_num %in% c(0, 1)))
+  }
+  if (!ok) {
     shown <- utils::head(sort(unique(as.character(uvals))), 5L)
     cli::cli_abort(c(
       "Treatment {.field {treatment}} must be a 0/1 (or FALSE/TRUE) indicator.",

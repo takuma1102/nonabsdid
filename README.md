@@ -97,31 +97,6 @@ res <- nabs_event_study_simple(
 If a particular estimator's package is not installed, that estimator is
 skipped with a message, and the remaining methods still produce output.
 
-## Large panels and troubleshooting
-
-A few things are worth knowing before you point this at a big panel:
-
-- **DCDH needs `polars`.** The `DIDmultiplegtDYN` backend refers to the
-  `polars` package; nonabsdid attaches it for you (with a one-time note), but
-  it must be installed. If automatic loading fails, run `library(polars)`
-  once and retry.
-- **Unit / cluster ids are coerced automatically.** PanelMatch requires a
-  numeric unit id and DCDH's polars backend cannot cluster on a string, so a
-  non-numeric `unit` or `cluster` is replaced by integer codes (added as a new
-  column). This only relabels ids and never changes estimates.
-- **`fect` runs single-threaded by default.** For `IFE`/`FE`/`MC`,
-  `parallel = FALSE` is the default: on large panels, copying the data to
-  parallel workers tends to exhaust memory rather than help. Set
-  `parallel = TRUE` (optionally with `cores`) for small panels.
-- **Tuning knobs are first-class arguments.** `nabs_event_study()` accepts
-  `cv`, `nboots`, `r`, `parallel`, and `cores` for the `fect` family, and
-  `number.iterations` for PanelMatch's bootstrap. For the lightest IFE run,
-  for example, fix the factors and skip cross-validation with
-  `nabs_event_study(..., method = "IFE", cv = FALSE, r = 2, parallel = FALSE)`.
-- **Samples can differ across estimators.** DCDH, `fect`, and PanelMatch drop
-  missing rows differently, so a row with `NA` in a control may be used by one
-  method and not another; nonabsdid notes when partial missingness is present.
-
 ## Careful runs
 
 For publication-ready work, switch to the full wrapper or to the underlying
@@ -251,6 +226,31 @@ Anything coercible to a data frame with at least `time` and `estimate`
 columns also flows through `as_nabs_event_study()`. Adding a new estimator
 later means writing a one-line method that pulls the right slots — the
 plotting code keeps working.
+
+## Large panels and troubleshooting
+
+A few things are worth knowing before you point this at a big panel:
+
+- **DCDH needs `polars`.** The `DIDmultiplegtDYN` backend refers to the
+  `polars` package; nonabsdid attaches it for you (with a one-time note), but
+  it must be installed. If automatic loading fails, run `library(polars)`
+  once and retry.
+- **Unit / cluster ids are coerced automatically.** PanelMatch requires a
+  numeric unit id and DCDH's polars backend cannot cluster on a string, so a
+  non-numeric `unit` or `cluster` is replaced by integer codes (added as a new
+  column). This only relabels ids and never changes estimates.
+- **`fect` runs single-threaded by default.** For `IFE`/`FE`/`MC`,
+  `parallel = FALSE` is the default: on large panels, copying the data to
+  parallel workers tends to exhaust memory rather than help. Set
+  `parallel = TRUE` (optionally with `cores`) for small panels.
+- **Tuning knobs are first-class arguments.** `nabs_event_study()` accepts
+  `cv`, `nboots`, `r`, `parallel`, and `cores` for the `fect` family, and
+  `number.iterations` for PanelMatch's bootstrap. For the lightest IFE run,
+  for example, fix the factors and skip cross-validation with
+  `nabs_event_study(..., method = "IFE", cv = FALSE, r = 2, parallel = FALSE)`.
+- **Samples can differ across estimators.** DCDH, `fect`, and PanelMatch drop
+  missing rows differently, so a row with `NA` in a control may be used by one
+  method and not another; nonabsdid notes when partial missingness is present.
 
 ## For Stata users
 

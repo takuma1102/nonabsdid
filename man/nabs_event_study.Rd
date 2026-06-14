@@ -19,9 +19,16 @@ nabs_event_study(
   cv = NULL,
   nboots = NULL,
   r = NULL,
+  k = NULL,
+  nlambda = NULL,
+  vartype = NULL,
+  se = NULL,
   parallel = FALSE,
   cores = NULL,
   number.iterations = NULL,
+  se.method = NULL,
+  run_placebo = NULL,
+  num.cores = NULL,
   ...
 )
 }
@@ -51,9 +58,26 @@ rather than help; set `parallel = TRUE` (optionally with `cores`) for big
 speedups on small panels. These are first-class arguments so that, e.g.,
 `cv = FALSE` no longer collides with internal defaults.}
 
-\item{number.iterations}{Bootstrap iterations for the `PanelMatch`
-standard errors (default 1000); ignored by other methods. Lower it (e.g.
-200) to make PanelMatch tractable on large panels.}
+\item{k, nlambda, vartype, se}{Further `fect`-family speed knobs. `k` is the
+number of cross-validation rounds; `fect`'s own default is 20, which is
+slow on large panels, so the wrapper defaults it to 5 when CV is on.
+`nlambda` caps the MC regularisation grid (wrapper default 5 vs `fect`'s
+10). `vartype` selects the variance estimator (`"bootstrap"`,
+`"jackknife"`, or `"parametric"`); `"parametric"` is available for `IFE`
+and avoids refitting the factor model on every resample, but is not
+supported for `MC`. `se = FALSE` skips uncertainty entirely for a fast
+point-estimate-only pass. Advanced `fect` knobs (`tol`, `max.iteration`,
+`em`, `lambda`) may also be passed through `...`.}
+
+\item{number.iterations, se.method, run_placebo, num.cores}{Tuning knobs for
+`PanelMatch`; ignored by other methods. `number.iterations` is the
+bootstrap count (default 1000); lower it (e.g. 200) for tractability.
+`se.method` selects the SE type (`"bootstrap"`, `"conditional"`,
+`"unconditional"`); the analytic `"conditional"`/`"unconditional"` methods
+skip the bootstrap entirely and are by far the biggest speed-up.
+`run_placebo = FALSE` skips the separate placebo-test bootstrap (a second
+full bootstrap pass). `parallel`/`num.cores` are forwarded to
+`PanelEstimate()` to spread the bootstrap across cores.}
 
 \item{...}{Extra arguments passed straight to the underlying estimator.
 Stata-style aliases are also accepted here and translated with an

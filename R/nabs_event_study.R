@@ -31,9 +31,25 @@
 #'   rather than help; set `parallel = TRUE` (optionally with `cores`) for big
 #'   speedups on small panels. These are first-class arguments so that, e.g.,
 #'   `cv = FALSE` no longer collides with internal defaults.
-#' @param number.iterations Bootstrap iterations for the `PanelMatch`
-#'   standard errors (default 1000); ignored by other methods. Lower it (e.g.
-#'   200) to make PanelMatch tractable on large panels.
+#' @param k,nlambda,vartype,se Further `fect`-family speed knobs. `k` is the
+#'   number of cross-validation rounds; `fect`'s own default is 20, which is
+#'   slow on large panels, so the wrapper defaults it to 5 when CV is on.
+#'   `nlambda` caps the MC regularisation grid (wrapper default 5 vs `fect`'s
+#'   10). `vartype` selects the variance estimator (`"bootstrap"`,
+#'   `"jackknife"`, or `"parametric"`); `"parametric"` is available for `IFE`
+#'   and avoids refitting the factor model on every resample, but is not
+#'   supported for `MC`. `se = FALSE` skips uncertainty entirely for a fast
+#'   point-estimate-only pass. Advanced `fect` knobs (`tol`, `max.iteration`,
+#'   `em`, `lambda`) may also be passed through `...`.
+#' @param number.iterations,se.method,run_placebo,num.cores Tuning knobs for
+#'   `PanelMatch`; ignored by other methods. `number.iterations` is the
+#'   bootstrap count (default 1000); lower it (e.g. 200) for tractability.
+#'   `se.method` selects the SE type (`"bootstrap"`, `"conditional"`,
+#'   `"unconditional"`); the analytic `"conditional"`/`"unconditional"` methods
+#'   skip the bootstrap entirely and are by far the biggest speed-up.
+#'   `run_placebo = FALSE` skips the separate placebo-test bootstrap (a second
+#'   full bootstrap pass). `parallel`/`num.cores` are forwarded to
+#'   `PanelEstimate()` to spread the bootstrap across cores.
 #' @param ... Extra arguments passed straight to the underlying estimator.
 #'   Stata-style aliases are also accepted here and translated with an
 #'   informative message: `df` (for `data`), `group` (for `unit`),
@@ -81,8 +97,10 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
                         cluster = unit,
                         conf.level = 0.95,
                         cv = NULL, nboots = NULL, r = NULL,
+                        k = NULL, nlambda = NULL, vartype = NULL, se = NULL,
                         parallel = FALSE, cores = NULL,
-                        number.iterations = NULL,
+                        number.iterations = NULL, se.method = NULL,
+                        run_placebo = NULL, num.cores = NULL,
                         ...) {
   method <- match.arg(method)
   call <- match.call()
@@ -121,9 +139,13 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
 
   # User-supplied tuning knobs, forwarded only to the estimators that use them.
   fect_knobs <- drop_nulls(list(
-    cv = cv, nboots = nboots, r = r, parallel = parallel, cores = cores
+    cv = cv, nboots = nboots, r = r, k = k, nlambda = nlambda,
+    vartype = vartype, se = se, parallel = parallel, cores = cores
   ))
-  pm_knobs <- drop_nulls(list(number.iterations = number.iterations))
+  pm_knobs <- drop_nulls(list(
+    number.iterations = number.iterations, se.method = se.method,
+    run_placebo = run_placebo, parallel = parallel, num.cores = num.cores
+  ))
 
   fit <- switch(
     method,
@@ -248,7 +270,13 @@ run_dcdh <- function(data, outcome, treatment, unit, time,
 run_panelmatch <- function(data, outcome, treatment, unit, time,
                            lags, leads, controls,
                            number.iterations = 1000L,
-                           se.method = "bootstrap", ...) {
+                           se.method = "bootstrap",
+                           refinement.method = NULL,
+                           size.match = 10L,
+                           match.missing = TRUE,
+                           run_placebo = TRUE,
+                           parallel = FALSE,
+                           num.cores = 1L, ...) {
   rlang::check_installed("PanelMatch", reason = "to fit PanelMatch estimators.")
 
   pd <- PanelMatch::PanelData(
@@ -263,39 +291,54 @@ run_panelmatch <- function(data, outcome, treatment, unit, time,
   # controls there is nothing to model it on, so PanelMatch produces an empty
   # refinement and downstream code errors with "attempt to set an attribute
   # on NULL". Fall back to exact matching on treatment history ("none") then.
+  # `refinement.method` may be set explicitly to override this auto choice.
   has_controls <- length(controls) > 0L
   covs_fml <- if (has_controls) stats::reformulate(controls) else NULL
-  refine   <- if (has_controls) "ps.match" else "none"
+  if (is.null(refinement.method)) {
+    refinement.method <- if (has_controls) "ps.match" else "none"
+  }
 
   pm <- PanelMatch::PanelMatch(
     panel.data = pd,
     lag        = lags,
-    refinement.method = refine,
-    match.missing = TRUE,
+    refinement.method = refinement.method,
+    match.missing = isTRUE(match.missing),
     covs.formula  = covs_fml,
-    size.match    = 10L,
+    size.match    = as.integer(size.match),
     qoi           = "att",
     lead          = 0:leads,
     forbid.treatment.reversal = FALSE,
-    placebo.test  = TRUE,
+    placebo.test  = isTRUE(run_placebo),
     ...
   )
 
-  # Bootstrap SEs are the expensive part on large panels; `number.iterations`
-  # is surfaced so callers can dial it down (e.g. 200) to stay tractable.
+  # Bootstrap SEs are the expensive part on large panels. Levers, in rough
+  # order of impact:
+  #   * se.method = "conditional"/"unconditional" -> analytic SEs, no bootstrap
+  #     (available for qoi = "att"); by far the biggest speed-up.
+  #   * run_placebo = FALSE -> skip the *second* (placebo) bootstrap pass.
+  #   * parallel / num.cores -> spread the bootstrap across cores.
+  #   * number.iterations -> fewer reps when se.method = "bootstrap".
   ni <- as.integer(number.iterations)
   pe <- PanelMatch::PanelEstimate(sets = pm, panel.data = pd,
                                   se.method = se.method,
-                                  number.iterations = ni)
-  pl <- PanelMatch::placebo_test(pm.obj = pm, panel.data = pd,
-                                 plot = FALSE, se.method = se.method,
-                                 number.iterations = ni)
+                                  number.iterations = ni,
+                                  parallel = isTRUE(parallel),
+                                  num.cores = as.integer(num.cores))
+  pl <- if (isTRUE(run_placebo)) {
+    PanelMatch::placebo_test(pm.obj = pm, panel.data = pd,
+                             plot = FALSE, se.method = se.method,
+                             number.iterations = ni)
+  } else NULL
   list(pe = pe, placebo = pl, pm = pm, panel = pd)
 }
 
 run_fect <- function(data, outcome, treatment, unit, time, controls,
                      fect_method = c("ife", "fe", "mc"),
                      cv = NULL, nboots = 200L, r = NULL,
+                     k = NULL, nlambda = NULL, lambda = NULL,
+                     vartype = NULL, se = TRUE,
+                     tol = NULL, max.iteration = NULL, em = NULL,
                      parallel = FALSE, cores = NULL, ...) {
   fect_method <- match.arg(fect_method)
   rlang::check_installed(
@@ -314,6 +357,27 @@ run_fect <- function(data, outcome, treatment, unit, time, controls,
   # an explicit `cv`, otherwise default per method.
   use_cv <- if (is.null(cv)) fect_method %in% c("ife", "mc") else isTRUE(cv)
 
+  # fect's own CV defaults are tuned for thoroughness (k = 20 rounds, plus a
+  # wide factor / lambda grid), which is very slow on large panels. Use lighter
+  # defaults here; override explicitly for final/publication runs.
+  if (use_cv) {
+    if (is.null(k))                               k       <- 5L   # fect default: 20
+    if (is.null(r)       && fect_method == "ife") r       <- 2L   # cap 0:2 factor search
+    if (is.null(nlambda) && fect_method == "mc")  nlambda <- 5L   # fect default: 10
+  }
+
+  # Inference. The nonparametric bootstrap refits the whole model on every
+  # resample; for IFE the parametric bootstrap (vartype = "parametric") avoids
+  # that and is far cheaper. It is NOT available for MC, so guard against it.
+  if (is.null(vartype)) vartype <- "bootstrap"
+  if (identical(vartype, "parametric") && fect_method == "mc") {
+    cli::cli_abort(c(
+      "{.val parametric} {.arg vartype} is not available for the MC estimator.",
+      "i" = "Use {.val bootstrap} or {.val jackknife}; lower {.arg nboots}, set \\
+             {.arg parallel = TRUE}, or {.arg se = FALSE} to speed MC up."
+    ))
+  }
+
   # parallel defaults to FALSE: on large panels fect copies the data (and a
   # >1GB closure) to each worker, which blows past future.globals.maxSize and
   # is slower in practice. Opt in for small panels.
@@ -324,13 +388,20 @@ run_fect <- function(data, outcome, treatment, unit, time, controls,
     force    = "two-way",
     method   = fect_method,
     CV       = use_cv,
-    se       = TRUE,
+    se       = isTRUE(se),
+    vartype  = vartype,
     nboots   = as.integer(nboots),
     na.rm    = TRUE,
     parallel = isTRUE(parallel)
   )
-  if (!is.null(cores)) args$cores <- as.integer(cores)
-  if (!is.null(r))     args$r     <- r
+  if (!is.null(cores))         args$cores         <- as.integer(cores)
+  if (!is.null(r))             args$r             <- r
+  if (use_cv && !is.null(k))   args$k             <- as.integer(k)
+  if (!is.null(nlambda))       args$nlambda       <- as.integer(nlambda)
+  if (!is.null(lambda))        args$lambda        <- lambda
+  if (!is.null(tol))           args$tol           <- tol
+  if (!is.null(max.iteration)) args$max.iteration <- as.integer(max.iteration)
+  if (!is.null(em))            args$em            <- isTRUE(em)
 
   # Anything in ... that would duplicate a protected argument is dropped with a
   # clear note (so e.g. CV = FALSE via ... no longer triggers a duplicate-arg
@@ -340,8 +411,8 @@ run_fect <- function(data, outcome, treatment, unit, time, controls,
   if (length(clash)) {
     cli::cli_warn(c(
       "Ignoring fect argument{?s} {.arg {clash}} passed via {.arg ...}.",
-      "i" = "Use {.arg cv}, {.arg nboots}, {.arg r}, {.arg parallel}, or \\
-             {.arg cores} instead."
+      "i" = "Use {.arg cv}, {.arg nboots}, {.arg r}, {.arg k}, {.arg nlambda}, \\
+             {.arg vartype}, {.arg se}, {.arg parallel}, or {.arg cores} instead."
     ))
     dots <- dots[setdiff(names(dots), names(args))]
   }

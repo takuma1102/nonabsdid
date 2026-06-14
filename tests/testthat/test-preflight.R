@@ -109,7 +109,7 @@ test_that("partial missingness is reported but not fatal", {
 
 test_that("drop_nulls keeps only supplied values", {
   expect_equal(dn(list(a = 1, b = NULL, c = 3)), list(a = 1, c = 3))
-  expect_equal(dn(list(a = NULL, b = NULL)), list())
+  expect_length(dn(list(a = NULL, b = NULL)), 0L)
   # the knob pattern used by nabs_event_study(): parallel = FALSE is kept.
   expect_equal(dn(list(cv = NULL, parallel = FALSE)), list(parallel = FALSE))
 })

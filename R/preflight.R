@@ -127,10 +127,12 @@ preflight_panel <- function(data, outcome, treatment, unit, time,
       (!anyNA(uvals_num) && all(uvals_num %in% c(0, 1)))
   }
   if (!ok) {
-    shown <- utils::head(sort(unique(as.character(uvals))), 5L)
+    shown_vec <- sort(unique(as.character(uvals)))
+    shown <- paste(utils::head(shown_vec, 5L), collapse = ", ")
+    if (length(shown_vec) > 5L) shown <- paste0(shown, ", ...")
     cli::cli_abort(c(
       "Treatment {.field {treatment}} must be a 0/1 (or FALSE/TRUE) indicator.",
-      "i" = "Found value{?s}: {.val {shown}}{if (length(uvals) > 5L) ', ...' else ''}.",
+      "i" = "Found values: {shown}.",
       "i" = "Recode it to 0 (untreated) / 1 (treated) before estimating."
     ))
   }

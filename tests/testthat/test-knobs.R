@@ -33,10 +33,12 @@ test_that("cv = FALSE is accepted (no collision with internal default)", {
   skip_if_not_installed("fect")
   d <- make_big_panel()
   res <- tryCatch(
-    nabs_event_study(d, outcome = "y", treatment = "d", unit = "id",
-                     time = "t", method = "IFE",
-                     lags = 2, leads = 2,
-                     cv = FALSE, r = 1, parallel = FALSE),
+    suppressWarnings(
+      nabs_event_study(d, outcome = "y", treatment = "d", unit = "id",
+                       time = "t", method = "IFE",
+                       lags = 2, leads = 2,
+                       cv = FALSE, r = 1, parallel = FALSE)
+    ),
     error = function(e) skip(paste("fect IFE unavailable on test panel:",
                                    conditionMessage(e)))
   )
@@ -80,19 +82,25 @@ test_that("PanelMatch accepts number.iterations", {
 test_that("simple() subsamples large panels and drops fits by default", {
   skip_if_not_installed("fect")
   d <- make_big_panel(n_units = 60)
-  res <- tryCatch(
-    expect_message(
-      nabs_event_study_simple(
+  res <- NULL
+  ok  <- TRUE
+  msgs <- tryCatch(
+    testthat::capture_messages(
+      res <- nabs_event_study_simple(
         d, outcome = "y", treatment = "d", unit = "id", time = "t",
         methods = "FE", include_twfe = FALSE,
         lags = 2, leads = 2,
         max_units = 30                      # force a subsample
-      ),
-      regexp = "sample"
+      )
     ),
-    error = function(e) skip(paste("fect FE unavailable on test panel:",
-                                   conditionMessage(e)))
+    error = function(e) {
+      ok <<- FALSE
+      conditionMessage(e)
+    }
   )
+  if (!ok) skip(paste("fect FE unavailable on test panel:", msgs))
+
+  expect_match(paste(msgs, collapse = "\n"), "sample")
   expect_s3_class(res, "nabs_event_study_simple")
   expect_length(res$fits, 0L)               # keep_fits = FALSE by default
   expect_true("FE" %in% names(res$per_method))

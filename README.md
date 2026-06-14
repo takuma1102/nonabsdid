@@ -59,10 +59,11 @@ plan to use.
 ## First-pass exploratory analysis
 
 At the early stage of an analysis, use `nabs_event_study_simple()` to get
-an initial sense of how the event-study estimates look across estimators.
-It runs the heterogeneity-robust estimators with reasonable defaults, fits
-a naive TWFE reference, and gives you a single overlay plot to inspect
-before moving on to estimator-specific tuning and robustness checks.
+an initial sense of how the event-study estimates look. By default it runs a
+deliberately cheap pass — DCDH plus two-way-FE imputation (`c("DCDH", "FE")`)
+and a naive TWFE reference — and on large panels it works on a random sample
+of units so the first look stays fast. The result is a single overlay plot to
+inspect before moving on to estimator-specific tuning.
 
 ```r
 library(nonabsdid)
@@ -78,11 +79,48 @@ res <- nabs_event_study_simple(
 res$plot       # the figure
 res$tidy       # combined tidy tibble across methods
 res$per_method # per-method tidy tibbles
-res$fits       # the native estimator objects, for diagnostics
+res$fits       # native estimator objects (only kept with keep_fits = TRUE)
+```
+
+Add the heavier estimators once the cheap pass looks reasonable — they are
+opt-in because PanelMatch's bootstrap and IFE/MC's cross-validation are slow
+on large panels:
+
+```r
+res <- nabs_event_study_simple(
+  mydata, outcome = "y", treatment = "d", unit = "id", time = "t",
+  methods = c("DCDH", "PanelMatch", "IFE", "FE", "MC"),
+  full = TRUE        # use every unit, not just the first-pass sample
+)
 ```
 
 If a particular estimator's package is not installed, that estimator is
 skipped with a message, and the remaining methods still produce output.
+
+## Large panels and troubleshooting
+
+A few things are worth knowing before you point this at a big panel:
+
+- **DCDH needs `polars`.** The `DIDmultiplegtDYN` backend refers to the
+  `polars` package; nonabsdid attaches it for you (with a one-time note), but
+  it must be installed. If automatic loading fails, run `library(polars)`
+  once and retry.
+- **Unit / cluster ids are coerced automatically.** PanelMatch requires a
+  numeric unit id and DCDH's polars backend cannot cluster on a string, so a
+  non-numeric `unit` or `cluster` is replaced by integer codes (added as a new
+  column). This only relabels ids and never changes estimates.
+- **`fect` runs single-threaded by default.** For `IFE`/`FE`/`MC`,
+  `parallel = FALSE` is the default: on large panels, copying the data to
+  parallel workers tends to exhaust memory rather than help. Set
+  `parallel = TRUE` (optionally with `cores`) for small panels.
+- **Tuning knobs are first-class arguments.** `nabs_event_study()` accepts
+  `cv`, `nboots`, `r`, `parallel`, and `cores` for the `fect` family, and
+  `number.iterations` for PanelMatch's bootstrap. For the lightest IFE run,
+  for example, fix the factors and skip cross-validation with
+  `nabs_event_study(..., method = "IFE", cv = FALSE, r = 2, parallel = FALSE)`.
+- **Samples can differ across estimators.** DCDH, `fect`, and PanelMatch drop
+  missing rows differently, so a row with `NA` in a control may be used by one
+  method and not another; nonabsdid notes when partial missingness is present.
 
 ## Careful runs
 

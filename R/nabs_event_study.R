@@ -22,6 +22,18 @@
 #' @param controls Optional character vector of covariate names.
 #' @param cluster Character; cluster variable. Defaults to `unit`.
 #' @param conf.level Confidence level for the tidied output. Default 0.95.
+#' @param cv,nboots,r,parallel,cores Tuning knobs for the `fect` family
+#'   (`IFE`, `FE`, `MC`); ignored by other methods. `cv` toggles
+#'   cross-validation (default: on for `IFE`/`MC`, off for `FE`); `r` caps /
+#'   fixes the number of interactive-fixed-effect factors; `nboots` is the
+#'   bootstrap count (default 200). `parallel` defaults to `FALSE` because, on
+#'   large panels, copying the data to parallel workers tends to exhaust memory
+#'   rather than help; set `parallel = TRUE` (optionally with `cores`) for big
+#'   speedups on small panels. These are first-class arguments so that, e.g.,
+#'   `cv = FALSE` no longer collides with internal defaults.
+#' @param number.iterations Bootstrap iterations for the `PanelMatch`
+#'   standard errors (default 1000); ignored by other methods. Lower it (e.g.
+#'   200) to make PanelMatch tractable on large panels.
 #' @param ... Extra arguments passed straight to the underlying estimator.
 #'   Stata-style aliases are also accepted here and translated with an
 #'   informative message: `df` (for `data`), `group` (for `unit`),
@@ -68,6 +80,9 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
                         controls = NULL,
                         cluster = unit,
                         conf.level = 0.95,
+                        cv = NULL, nboots = NULL, r = NULL,
+                        parallel = FALSE, cores = NULL,
+                        number.iterations = NULL,
                         ...) {
   method <- match.arg(method)
   call <- match.call()
@@ -92,6 +107,24 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
   # `data` may also be a path to a .dta file.
   data <- resolve_panel_data(data)
 
+  # Guard layer: validate the panel and coerce ids where an estimator needs it
+  # (character unit -> integer for PanelMatch; string cluster -> integer for
+  # DCDH's polars backend). `unit`/`cluster`/`controls` may be renamed here.
+  pf <- preflight_panel(
+    data, outcome = outcome, treatment = treatment,
+    unit = unit, time = time, controls = controls, cluster = cluster
+  )
+  data     <- pf$data
+  unit     <- pf$unit
+  cluster  <- pf$cluster
+  controls <- pf$controls
+
+  # User-supplied tuning knobs, forwarded only to the estimators that use them.
+  fect_knobs <- drop_nulls(list(
+    cv = cv, nboots = nboots, r = r, parallel = parallel, cores = cores
+  ))
+  pm_knobs <- drop_nulls(list(number.iterations = number.iterations))
+
   fit <- switch(
     method,
     DCDH       = do.call(run_dcdh,
@@ -99,16 +132,19 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
                                 lags, leads, controls, cluster), dots)),
     PanelMatch = do.call(run_panelmatch,
                          c(list(data, outcome, treatment, unit, time,
-                                lags, leads, controls), dots)),
+                                lags, leads, controls), pm_knobs, dots)),
     IFE        = do.call(run_fect,
                          c(list(data, outcome, treatment, unit, time,
-                                controls, fect_method = "ife"), dots)),
+                                controls, fect_method = "ife"),
+                           fect_knobs, dots)),
     FE         = do.call(run_fect,
                          c(list(data, outcome, treatment, unit, time,
-                                controls, fect_method = "fe"), dots)),
+                                controls, fect_method = "fe"),
+                           fect_knobs, dots)),
     MC         = do.call(run_fect,
                          c(list(data, outcome, treatment, unit, time,
-                                controls, fect_method = "mc"), dots))
+                                controls, fect_method = "mc"),
+                           fect_knobs, dots))
   )
 
   tidy <- if (method == "PanelMatch") {
@@ -152,6 +188,9 @@ nabs_event_study <- function(data, outcome, treatment, unit, time,
 run_dcdh <- function(data, outcome, treatment, unit, time,
                      lags, leads, controls, cluster, ...) {
   rlang::check_installed("DIDmultiplegtDYN", reason = "to fit DCDH estimators.")
+  # DIDmultiplegtDYN's backend refers to the bare symbol `pl`; make sure polars
+  # is attached so it doesn't fail with "object 'pl' not found".
+  ensure_polars()
 
   # +1: the tidier shifts DCDH's axis left by one (native reference at 0, ours
   # at -1), so native Effect_(leads+1) lands at x = +leads.
@@ -207,7 +246,9 @@ run_dcdh <- function(data, outcome, treatment, unit, time,
 }
 
 run_panelmatch <- function(data, outcome, treatment, unit, time,
-                           lags, leads, controls, ...) {
+                           lags, leads, controls,
+                           number.iterations = 1000L,
+                           se.method = "bootstrap", ...) {
   rlang::check_installed("PanelMatch", reason = "to fit PanelMatch estimators.")
 
   pd <- PanelMatch::PanelData(
@@ -240,15 +281,22 @@ run_panelmatch <- function(data, outcome, treatment, unit, time,
     ...
   )
 
+  # Bootstrap SEs are the expensive part on large panels; `number.iterations`
+  # is surfaced so callers can dial it down (e.g. 200) to stay tractable.
+  ni <- as.integer(number.iterations)
   pe <- PanelMatch::PanelEstimate(sets = pm, panel.data = pd,
-                                  se.method = "bootstrap")
+                                  se.method = se.method,
+                                  number.iterations = ni)
   pl <- PanelMatch::placebo_test(pm.obj = pm, panel.data = pd,
-                                 plot = FALSE, se.method = "bootstrap")
+                                 plot = FALSE, se.method = se.method,
+                                 number.iterations = ni)
   list(pe = pe, placebo = pl, pm = pm, panel = pd)
 }
 
 run_fect <- function(data, outcome, treatment, unit, time, controls,
-                     fect_method = c("ife", "fe", "mc"), ...) {
+                     fect_method = c("ife", "fe", "mc"),
+                     cv = NULL, nboots = 200L, r = NULL,
+                     parallel = FALSE, cores = NULL, ...) {
   fect_method <- match.arg(fect_method)
   rlang::check_installed(
     "fect",
@@ -261,23 +309,44 @@ run_fect <- function(data, outcome, treatment, unit, time, controls,
   } else treatment
   fml <- stats::as.formula(paste(outcome, "~", rhs))
 
-  # CV is meaningful for IFE (selects number of factors) and MC (selects
-  # tuning parameter); for plain FE there's nothing to cross-validate, so
-  # we turn it off to avoid spurious warnings.
-  use_cv <- fect_method %in% c("ife", "mc")
+  # CV is meaningful for IFE (selects number of factors) and MC (selects the
+  # tuning parameter); for plain FE there's nothing to cross-validate. Honour
+  # an explicit `cv`, otherwise default per method.
+  use_cv <- if (is.null(cv)) fect_method %in% c("ife", "mc") else isTRUE(cv)
 
-  fect::fect(
-    formula = fml,
-    data    = as.data.frame(data),
-    index   = c(unit, time),
-    force   = "two-way",
-    method  = fect_method,
-    CV      = use_cv,
-    se      = TRUE,
-    nboots  = 200L,
-    na.rm   = TRUE,
-    ...
+  # parallel defaults to FALSE: on large panels fect copies the data (and a
+  # >1GB closure) to each worker, which blows past future.globals.maxSize and
+  # is slower in practice. Opt in for small panels.
+  args <- list(
+    formula  = fml,
+    data     = as.data.frame(data),
+    index    = c(unit, time),
+    force    = "two-way",
+    method   = fect_method,
+    CV       = use_cv,
+    se       = TRUE,
+    nboots   = as.integer(nboots),
+    na.rm    = TRUE,
+    parallel = isTRUE(parallel)
   )
+  if (!is.null(cores)) args$cores <- as.integer(cores)
+  if (!is.null(r))     args$r     <- r
+
+  # Anything in ... that would duplicate a protected argument is dropped with a
+  # clear note (so e.g. CV = FALSE via ... no longer triggers a duplicate-arg
+  # error); use the dedicated arguments instead.
+  dots  <- list(...)
+  clash <- intersect(names(dots), names(args))
+  if (length(clash)) {
+    cli::cli_warn(c(
+      "Ignoring fect argument{?s} {.arg {clash}} passed via {.arg ...}.",
+      "i" = "Use {.arg cv}, {.arg nboots}, {.arg r}, {.arg parallel}, or \\
+             {.arg cores} instead."
+    ))
+    dots <- dots[setdiff(names(dots), names(args))]
+  }
+
+  do.call(fect::fect, c(args, dots))
 }
 
 #' @export

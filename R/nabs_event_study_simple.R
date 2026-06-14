@@ -18,9 +18,11 @@
 #'   column should be a 0/1 indicator (it is allowed to switch back to 0,
 #'   i.e. non-absorbing).
 #' @param methods Character vector of estimators to run. Any subset of
-#'   `c("DCDH", "PanelMatch", "IFE", "FE", "MC")`. Default `c("DCDH",
-#'   "PanelMatch", "IFE")` -- the three classic heterogeneity-robust
-#'   estimators.
+#'   `c("DCDH", "PanelMatch", "IFE", "FE", "MC")`. Default `c("DCDH", "FE")`
+#'   -- a cheap first look (DCDH plus two-way-FE imputation, no
+#'   cross-validation). The heavier estimators (`PanelMatch`'s bootstrap and
+#'   `IFE`/`MC`'s cross-validation) are opt-in: add them explicitly once the
+#'   cheap pass looks reasonable, or call [nabs_event_study()] to tune them.
 #' @param include_twfe Logical; if `TRUE` (default), also fit a naive TWFE
 #'   reference series via [naive_twfe()] and overlay it in a neutral color.
 #' @param lags,leads Integer pre- and post-period lengths. If `NULL`
@@ -33,6 +35,16 @@
 #'   straight through to each estimator.
 #' @param verbose Logical; if `TRUE` (default), print a brief progress
 #'   message before each estimator runs.
+#' @param full Logical; if `FALSE` (default) and the panel has more than
+#'   `max_units` units, a random sample of `max_units` units is used so the
+#'   first pass stays fast. Set `full = TRUE` to use every unit.
+#' @param max_units Integer; the unit cap used when `full = FALSE`
+#'   (default 5000).
+#' @param sample_seed Integer seed for the first-pass subsample, so the quick
+#'   look is reproducible. The caller's global RNG state is left untouched.
+#' @param keep_fits Logical; if `FALSE` (default) the heavy native estimator
+#'   objects are not retained in `$fits` (they can be gigabytes for `fect`).
+#'   Set `TRUE` if you need them for diagnostics.
 #' @param ... Forwarded to [nabs_event_plot()] (e.g. `xlim`, `ylim`,
 #'   `palette`, `ylab`, `x_break_by`). Stata-style aliases are also
 #'   accepted here and translated with an informative message: `df` (for
@@ -89,11 +101,15 @@
 #' }
 #' @export
 nabs_event_study_simple <- function(data, outcome, treatment, unit, time,
-                                    methods = c("DCDH", "PanelMatch", "IFE"),
+                                    methods = c("DCDH", "FE"),
                                     include_twfe = TRUE,
                                     lags = NULL, leads = NULL,
                                     controls = NULL,
                                     verbose = TRUE,
+                                    full = FALSE,
+                                    max_units = 5000L,
+                                    sample_seed = 1L,
+                                    keep_fits = FALSE,
                                     ...) {
   call <- match.call()
 
@@ -135,6 +151,33 @@ nabs_event_study_simple <- function(data, outcome, treatment, unit, time,
   methods <- match.arg(methods,
                        choices = c("DCDH", "PanelMatch", "IFE", "FE", "MC"),
                        several.ok = TRUE)
+
+  # Keep the first pass fast on large panels by sampling units (reproducibly,
+  # without touching the caller's RNG). Opt out with `full = TRUE`.
+  units_all <- unique(data[[unit]])
+  n_units <- length(units_all)
+  if (!isTRUE(full) && n_units > max_units) {
+    keep <- with_local_seed(sample_seed, sample(units_all, max_units))
+    data <- data[data[[unit]] %in% keep, , drop = FALSE]
+    if (isTRUE(verbose)) {
+      cli::cli_alert_info(c(
+        "Large panel: using a {.val {max_units}}-of-{.val {n_units}} unit \\
+         sample for this first pass.",
+        "i" = "Pass {.code full = TRUE} to use every unit."
+      ))
+    }
+  }
+
+  # Validate / coerce once up front (numeric ids, 0/1 treatment, NA notice) so
+  # the per-method calls below see a clean panel and stay quiet.
+  pf <- preflight_panel(
+    data, outcome = outcome, treatment = treatment,
+    unit = unit, time = time, controls = controls, cluster = unit,
+    quiet = !isTRUE(verbose)
+  )
+  data     <- pf$data
+  unit     <- pf$unit
+  controls <- pf$controls
 
   # Auto-pick window lengths if the user didn't supply them. We look at the
   # actual treated history per unit to size the window sensibly.
@@ -200,7 +243,7 @@ nabs_event_study_simple <- function(data, outcome, treatment, unit, time,
     }
 
     if (!is.null(res)) {
-      fits[[m]]       <- res$fit
+      if (isTRUE(keep_fits)) fits[[m]] <- res$fit
       per_method[[m]] <- res$tidy
     }
   }
@@ -261,8 +304,13 @@ print.nabs_event_study_simple <- function(x, ...) {
   cli::cli_text("methods run: {.val {names(x$per_method)}}")
   cli::cli_text("twfe reference: {.val {!is.null(x$twfe)}}")
   cli::cli_text("rows in combined tidy: {nrow(x$tidy)}")
-  cli::cli_text("Use {.code $plot} to view, {.code $tidy} to inspect, \\
-                  {.code $fits} for native objects.")
+  if (length(x$fits)) {
+    cli::cli_text("Use {.code $plot} to view, {.code $tidy} to inspect, \\
+                    {.code $fits} for native objects.")
+  } else {
+    cli::cli_text("Use {.code $plot} to view and {.code $tidy} to inspect \\
+                    (re-run with {.code keep_fits = TRUE} for native objects).")
+  }
   invisible(x)
 }
 

@@ -10,12 +10,16 @@ nabs_event_study_simple(
   treatment,
   unit,
   time,
-  methods = c("DCDH", "PanelMatch", "IFE"),
+  methods = c("DCDH", "FE"),
   include_twfe = TRUE,
   lags = NULL,
   leads = NULL,
   controls = NULL,
   verbose = TRUE,
+  full = FALSE,
+  max_units = 5000L,
+  sample_seed = 1L,
+  keep_fits = FALSE,
   ...
 )
 }
@@ -28,9 +32,11 @@ column should be a 0/1 indicator (it is allowed to switch back to 0,
 i.e. non-absorbing).}
 
 \item{methods}{Character vector of estimators to run. Any subset of
-`c("DCDH", "PanelMatch", "IFE", "FE", "MC")`. Default `c("DCDH",
-"PanelMatch", "IFE")` -- the three classic heterogeneity-robust
-estimators.}
+`c("DCDH", "PanelMatch", "IFE", "FE", "MC")`. Default `c("DCDH", "FE")`
+-- a cheap first look (DCDH plus two-way-FE imputation, no
+cross-validation). The heavier estimators (`PanelMatch`'s bootstrap and
+`IFE`/`MC`'s cross-validation) are opt-in: add them explicitly once the
+cheap pass looks reasonable, or call [nabs_event_study()] to tune them.}
 
 \item{include_twfe}{Logical; if `TRUE` (default), also fit a naive TWFE
 reference series via [naive_twfe()] and overlay it in a neutral color.}
@@ -47,6 +53,20 @@ straight through to each estimator.}
 
 \item{verbose}{Logical; if `TRUE` (default), print a brief progress
 message before each estimator runs.}
+
+\item{full}{Logical; if `FALSE` (default) and the panel has more than
+`max_units` units, a random sample of `max_units` units is used so the
+first pass stays fast. Set `full = TRUE` to use every unit.}
+
+\item{max_units}{Integer; the unit cap used when `full = FALSE`
+(default 5000).}
+
+\item{sample_seed}{Integer seed for the first-pass subsample, so the quick
+look is reproducible. The caller's global RNG state is left untouched.}
+
+\item{keep_fits}{Logical; if `FALSE` (default) the heavy native estimator
+objects are not retained in `$fits` (they can be gigabytes for `fect`).
+Set `TRUE` if you need them for diagnostics.}
 
 \item{...}{Forwarded to [nabs_event_plot()] (e.g. `xlim`, `ylim`,
 `palette`, `ylab`, `x_break_by`). Stata-style aliases are also

@@ -16,6 +16,12 @@ nabs_event_study(
   controls = NULL,
   cluster = unit,
   conf.level = 0.95,
+  cv = NULL,
+  nboots = NULL,
+  r = NULL,
+  parallel = FALSE,
+  cores = NULL,
+  number.iterations = NULL,
   ...
 )
 }
@@ -34,6 +40,20 @@ is read via [nabs_read_dta()] with default settings).}
 \item{cluster}{Character; cluster variable. Defaults to `unit`.}
 
 \item{conf.level}{Confidence level for the tidied output. Default 0.95.}
+
+\item{cv, nboots, r, parallel, cores}{Tuning knobs for the `fect` family
+(`IFE`, `FE`, `MC`); ignored by other methods. `cv` toggles
+cross-validation (default: on for `IFE`/`MC`, off for `FE`); `r` caps /
+fixes the number of interactive-fixed-effect factors; `nboots` is the
+bootstrap count (default 200). `parallel` defaults to `FALSE` because, on
+large panels, copying the data to parallel workers tends to exhaust memory
+rather than help; set `parallel = TRUE` (optionally with `cores`) for big
+speedups on small panels. These are first-class arguments so that, e.g.,
+`cv = FALSE` no longer collides with internal defaults.}
+
+\item{number.iterations}{Bootstrap iterations for the `PanelMatch`
+standard errors (default 1000); ignored by other methods. Lower it (e.g.
+200) to make PanelMatch tractable on large panels.}
 
 \item{...}{Extra arguments passed straight to the underlying estimator.
 Stata-style aliases are also accepted here and translated with an

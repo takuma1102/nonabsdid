@@ -27,9 +27,12 @@
 #'   reference series via [naive_twfe()] and overlay it in a neutral color.
 #' @param lags,leads Integer pre- and post-period lengths. If `NULL`
 #'   (default), reasonable values are auto-chosen from the panel: `leads`
-#'   is set to roughly one third of the longest post-treatment span
-#'   (capped at 8), and `lags` to roughly one quarter of the longest
-#'   pre-treatment span (capped at 6). Override either explicitly to be
+#'   is set to roughly one third of the typical (median) post-treatment
+#'   span across treated units (capped at 8), and `lags` to roughly one
+#'   quarter of the typical (median) pre-treatment span (capped at 6).
+#'   The median is used rather than the maximum so that a single unit with
+#'   an unusually long history does not inflate the window. Override either
+#'   explicitly to be
 #'   sure of the window.
 #' @param controls Optional character vector of covariate names; passed
 #'   straight through to each estimator.
@@ -353,10 +356,12 @@ auto_window <- function(data, treatment, unit, time,
   unit_max <- tapply(t, g, max)                  # latest period per unit
   first_t  <- tapply(t[treated], g[treated], min) # first switch-on per treated unit
 
-  # Align spans to treated units only (tapply keys are the unit codes).
+  # Align spans to treated units only (tapply keys are the unit codes). Use the
+  # median span across treated units rather than the max, so a single unit with
+  # an unusually long pre/post history can't inflate the default window.
   gt <- names(first_t)
-  pre_span  <- max(first_t - unit_min[gt], na.rm = TRUE)
-  post_span <- max(unit_max[gt] - first_t, na.rm = TRUE)
+  pre_span  <- stats::median(first_t - unit_min[gt], na.rm = TRUE)
+  post_span <- stats::median(unit_max[gt] - first_t, na.rm = TRUE)
 
   default_lags  <- if (is.null(user_lags))  {
     max(2L, min(6L, as.integer(round(pre_span  / 4))))

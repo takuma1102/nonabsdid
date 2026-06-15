@@ -43,9 +43,12 @@ reference series via [naive_twfe()] and overlay it in a neutral color.}
 
 \item{lags, leads}{Integer pre- and post-period lengths. If `NULL`
 (default), reasonable values are auto-chosen from the panel: `leads`
-is set to roughly one third of the longest post-treatment span
-(capped at 8), and `lags` to roughly one quarter of the longest
-pre-treatment span (capped at 6). Override either explicitly to be
+is set to roughly one third of the typical (median) post-treatment
+span across treated units (capped at 8), and `lags` to roughly one
+quarter of the typical (median) pre-treatment span (capped at 6).
+The median is used rather than the maximum so that a single unit with
+an unusually long history does not inflate the window. Override either
+explicitly to be
 sure of the window.}
 
 \item{controls}{Optional character vector of covariate names; passed

@@ -214,6 +214,11 @@ run_dcdh <- function(data, outcome, treatment, unit, time,
   # is attached so it doesn't fail with "object 'pl' not found".
   ensure_polars()
 
+  # The wrapper hands us a plain data.frame (preflight_panel() already
+  # coerced); only copy if a direct caller passed something else, so we don't
+  # duplicate a multi-GB panel on the normal path.
+  if (!is.data.frame(data)) data <- as.data.frame(data)
+
   # +1: the tidier shifts DCDH's axis left by one (native reference at 0, ours
   # at -1), so native Effect_(leads+1) lands at x = +leads.
   eff <- as.integer(leads) + 1L
@@ -229,7 +234,7 @@ run_dcdh <- function(data, outcome, treatment, unit, time,
   # Evaluation environment: child of the package namespace (so
   # `did_multiplegt_dyn` and internals resolve), holding our by-reference args.
   env <- new.env(parent = asNamespace("DIDmultiplegtDYN"))
-  env$.df        <- as.data.frame(data)
+  env$.df        <- data
   env$.outcome   <- outcome
   env$.group     <- unit
   env$.time      <- time
@@ -279,8 +284,11 @@ run_panelmatch <- function(data, outcome, treatment, unit, time,
                            num.cores = 1L, ...) {
   rlang::check_installed("PanelMatch", reason = "to fit PanelMatch estimators.")
 
+  # Already a plain data.frame on the wrapper path; only copy for direct callers.
+  if (!is.data.frame(data)) data <- as.data.frame(data)
+
   pd <- PanelMatch::PanelData(
-    panel.data = as.data.frame(data),
+    panel.data = data,
     unit.id    = unit,
     time.id    = time,
     treatment  = treatment,
@@ -347,6 +355,9 @@ run_fect <- function(data, outcome, treatment, unit, time, controls,
                      toupper(fect_method))
   )
 
+  # Already a plain data.frame on the wrapper path; only copy for direct callers.
+  if (!is.data.frame(data)) data <- as.data.frame(data)
+
   rhs <- if (length(controls)) {
     paste(treatment, "+", paste(controls, collapse = " + "))
   } else treatment
@@ -383,7 +394,7 @@ run_fect <- function(data, outcome, treatment, unit, time, controls,
   # is slower in practice. Opt in for small panels.
   args <- list(
     formula  = fml,
-    data     = as.data.frame(data),
+    data     = data,
     index    = c(unit, time),
     force    = "two-way",
     method   = fect_method,

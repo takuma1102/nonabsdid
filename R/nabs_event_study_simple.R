@@ -332,14 +332,12 @@ auto_window <- function(data, treatment, unit, time,
     return(list(lags = as.integer(user_lags), leads = as.integer(user_leads)))
   }
 
-  d <- data.frame(
-    unit = data[[unit]],
-    t    = as.numeric(data[[time]]),
-    z    = as.integer(data[[treatment]] != 0L)
-  )
-  treated_rows <- d[d$z == 1L & !is.na(d$z), , drop = FALSE]
+  u <- data[[unit]]
+  t <- as.numeric(data[[time]])
+  z <- as.integer(data[[treatment]] != 0L)
+  treated <- !is.na(z) & z == 1L
 
-  if (nrow(treated_rows) == 0L) {
+  if (!any(treated)) {
     cli::cli_warn(c(
       "No treated observations found in {.arg data}.",
       "i" = "Falling back to lags = 6, leads = 8."
@@ -347,18 +345,18 @@ auto_window <- function(data, treatment, unit, time,
     return(list(lags = 6L, leads = 8L))
   }
 
-  # Pre-treatment span: longest stretch from earliest observation to first
-  # switch-on, across treated units.
-  first_treat <- stats::aggregate(t ~ unit, data = treated_rows, FUN = min)
-  names(first_treat) <- c("unit", "first_t")
-  unit_min <- stats::aggregate(t ~ unit, data = d, FUN = min)
-  names(unit_min) <- c("unit", "min_t")
-  unit_max <- stats::aggregate(t ~ unit, data = d, FUN = max)
-  names(unit_max) <- c("unit", "max_t")
-  m <- merge(merge(first_treat, unit_min, by = "unit"), unit_max, by = "unit")
+  # Per-unit reductions in a single grouped pass each, keyed on integer unit
+  # codes. This drops the formula-interface aggregate() calls and the
+  # merge() sort-joins, which dominate auto_window() on large panels.
+  g <- match(u, unique(u))                       # 1..U unit codes
+  unit_min <- tapply(t, g, min)                  # earliest period per unit
+  unit_max <- tapply(t, g, max)                  # latest period per unit
+  first_t  <- tapply(t[treated], g[treated], min) # first switch-on per treated unit
 
-  pre_span  <- max(m$first_t - m$min_t, na.rm = TRUE)
-  post_span <- max(m$max_t   - m$first_t, na.rm = TRUE)
+  # Align spans to treated units only (tapply keys are the unit codes).
+  gt <- names(first_t)
+  pre_span  <- max(first_t - unit_min[gt], na.rm = TRUE)
+  post_span <- max(unit_max[gt] - first_t, na.rm = TRUE)
 
   default_lags  <- if (is.null(user_lags))  {
     max(2L, min(6L, as.integer(round(pre_span  / 4))))

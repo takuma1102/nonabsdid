@@ -71,6 +71,11 @@ so `lags = 6, leads = 8` yields event times on `[-6, 8]`.
 Coefficients and standard errors are read directly from the fitted model
 (clustered as requested); the reference period `-1` is reported as exactly
 zero.
+
+Missing treatment values are read as untreated (`0`) when the leads and lags
+are constructed. For this naive benchmark that is usually innocuous, but if
+treatment missingness is itself informative it can bias the reference path;
+the heterogeneity-robust estimators handle missingness on their own terms.
 }
 \examples{
 \dontshow{if (rlang::is_installed("fixest")) withAutoprint(\{ # examplesIf}

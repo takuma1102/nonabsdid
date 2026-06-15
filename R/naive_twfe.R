@@ -45,6 +45,11 @@
 #' (clustered as requested); the reference period `-1` is reported as exactly
 #' zero.
 #'
+#' Missing treatment values are read as untreated (`0`) when the leads and lags
+#' are constructed. For this naive benchmark that is usually innocuous, but if
+#' treatment missingness is itself informative it can bias the reference path;
+#' the heterogeneity-robust estimators handle missingness on their own terms.
+#'
 #' @examplesIf rlang::is_installed("fixest")
 #' df <- data.frame(
 #'   id = rep(1:4, each = 8),
@@ -103,7 +108,11 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
   lags <- as.integer(lags)
   leads <- as.integer(leads)
 
-  data <- as.data.frame(data)
+  # build_dl_design() adds columns by `[[<-`; on a data.table that would mutate
+  # the caller's object by reference, so coerce non-base frames to a plain
+  # data.frame. A base data.frame (the `_simple()` path already passes one) is
+  # left as-is to avoid a redundant full copy.
+  if (!identical(class(data), "data.frame")) data <- as.data.frame(data)
 
   required_cols <- unique(c(outcome, treatment, unit, time, controls, cluster))
   missing_cols <- setdiff(required_cols, names(data))
@@ -295,13 +304,24 @@ build_dl_design <- function(data, treatment, unit, time, lags, leads) {
   trt <- as.numeric(d[[treatment]] != 0)
   trt[is.na(trt)] <- 0
 
-  # (unit, time)-keyed look-up so shifts respect the actual time index
-  # (robust to gaps in the panel).
-  key <- paste(u, tm, sep = "\r")
-  D_by_key <- stats::setNames(trt, key)
+  # Integer-coded (unit, time) composite key, so each shifted look-up is a
+  # single integer match() rather than a fresh full-length paste() + string
+  # hash. Units are coded 1..U; times are matched against the observed period
+  # grid (1..T), so gaps in the panel still resolve to "no such period" -> 0,
+  # exactly as the previous string-keyed version did. The composite
+  # `ug * span + tcode` is collision-free because tcode < span by construction.
+  ug      <- match(u, unique(u))     # 1..U unit codes
+  tlevels <- sort(unique(tm))        # observed period grid (handles gaps)
+  tcode   <- match(tm, tlevels)      # 1..T period codes
+  span    <- length(tlevels) + 1L    # stride between unit blocks
+
+  src_key <- ug * span + tcode       # one integer key per row
 
   fetch_D <- function(offset) {
-    val <- unname(D_by_key[paste(u, tm - offset, sep = "\r")])
+    # Shift in the time *value* domain, then map back onto the period grid;
+    # periods that don't exist (panel edges / gaps) come back as NA -> 0.
+    q_tcode <- match(tm - offset, tlevels)
+    val <- trt[match(ug * span + q_tcode, src_key)]
     val[is.na(val)] <- 0
     as.numeric(val)
   }

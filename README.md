@@ -38,6 +38,10 @@ correcting against.
 
 ## Installation
 
+> **Note**
+> The version on CRAN is outdated. For the latest version, install from
+> GitHub or R-universe rather than CRAN.
+
 ```r
 # Development version from GitHub:
 # install.packages("pak")

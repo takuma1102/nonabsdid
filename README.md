@@ -38,9 +38,8 @@ correcting against.
 
 ## Installation
 
-> **Note**
-> The version on CRAN is outdated. For the latest version, install from
-> GitHub or R-universe rather than CRAN.
+> [!NOTE]
+> The version on CRAN is outdated. Install from GitHub or R-universe for the latest version.
 
 ```r
 # Development version from GitHub:

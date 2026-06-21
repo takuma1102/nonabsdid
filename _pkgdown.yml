@@ -1,0 +1,76 @@
+url: https://takuma1102.github.io/nonabsdid/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#08519C"
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
+
+navbar:
+  type: default
+  structure:
+    left:  [intro, articles, reference, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/getting-started.html
+    articles:
+      text: Articles
+      menu:
+        - text: Getting started
+          href: articles/getting-started.html
+        - text: nonabsdid for Stata users
+          href: articles/nonabsdid-for-stata-users.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    github:
+      icon: fa-github fa-lg
+      href: https://github.com/takuma1102/nonabsdid
+      aria-label: GitHub
+
+home:
+  links:
+    - text: Source code
+      href: https://github.com/takuma1102/nonabsdid
+    - text: Report a bug or request a feature
+      href: https://github.com/takuma1102/nonabsdid/issues
+
+reference:
+  - title: "Run an estimator"
+    desc: >
+      Fit one of the supported heterogeneity-robust estimators (DCDH,
+      PanelMatch, fect's IFE/FE/MC) through a single unified interface, or
+      run several at once for a quick first look.
+    contents:
+      - nabs_event_study
+      - nabs_event_study_simple
+
+  - title: "Naive reference"
+    desc: >
+      A deliberately unsophisticated two-way fixed-effects event study, drawn
+      as a neutral reference against the heterogeneity-robust estimators.
+    contents:
+      - naive_twfe
+
+  - title: "Tidy and plot"
+    desc: >
+      Coerce native estimator output onto a common tidy schema, then overlay
+      any combination of methods on a single ggplot2 panel.
+    contents:
+      - as_nabs_event_study
+      - nabs_event_plot
+
+  - title: "Stata interoperability"
+    desc: >
+      Read panels from, and write tidy results back to, Stata `.dta` files.
+    contents:
+      - nabs_read_dta
+      - nabs_write_dta
+
+  - title: "Package overview"
+    contents:
+      - nonabsdid-package

@@ -55,6 +55,7 @@ and the following columns:
 Useful links:
 \itemize{
   \item \url{https://github.com/takuma1102/nonabsdid}
+  \item \url{https://takuma1102.github.io/nonabsdid/}
   \item Report bugs at \url{https://github.com/takuma1102/nonabsdid/issues}
 }
 

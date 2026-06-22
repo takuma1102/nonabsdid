@@ -279,6 +279,42 @@ nabs_write_dta(res$tidy, "event_study_results.dta")
 See `vignette("nonabsdid-for-stata-users")` for the full option-by-option
 mapping from `did_multiplegt_dyn` and the round trip back to `twoway`.
 
+## Cohort matrix (experimental)
+
+The event-study workflow above collapses every cohort onto one relative-time
+axis. A separate, newer feature line keeps the **onset cohort** as a second
+dimension and draws it as a heatmap — rows are cohorts, columns are relative (or
+calendar) time, fill is the estimated effect. One method per plot reads best
+(the method becomes the title); `show_se = TRUE` prints the standard error
+beneath each estimate.
+
+<img src="man/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%" />
+
+```r
+res_ife  <- nabs_effect_cells(panel, outcome = "y", treatment = "d",
+                              unit = "id", time = "t", method = "IFE")
+res_dcdh <- nabs_effect_cells(panel, outcome = "y", treatment = "d",
+                              unit = "id", time = "t", method = "DCDH")
+
+# individual heatmaps (recommended): auto-titled, estimates + SEs in each cell
+plot_effect_matrix(res_ife$cells,  show_estimates = TRUE, show_se = TRUE)
+plot_effect_matrix(res_dcdh$cells, show_estimates = TRUE, show_se = TRUE)
+
+# passing several methods facets them with a shared scale, but gets crowded:
+# plot_effect_matrix(res_dcdh$cells, res_ife$cells)
+```
+
+This is **experimental** and currently supports **DCDH** and the **fect** family
+only. **PanelMatch is intentionally omitted**: a faithful cohort matrix needs
+per-cohort estimates *and* per-cohort SEs, and for PanelMatch that requires
+re-aggregating matched-set effects by switch time and re-running the matched-set
+bootstrap on that re-aggregation — out of scope for now, so it is left out
+rather than shipped with incorrect standard errors. Compare methods as
+triangulation of the *pattern*, not as cell-by-cell equality (the estimators
+differ in estimand, controls, and coverage). See the
+[*Cohort-by-time effect matrices and heatmaps*](https://takuma1102.github.io/nonabsdid/articles/cohort-matrix.html)
+article for details.
+
 ## Status
 
 This package is experimental. The output schema is intended to be stable,

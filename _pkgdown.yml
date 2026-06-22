@@ -24,6 +24,8 @@ navbar:
           href: articles/getting-started.html
         - text: nonabsdid for Stata users
           href: articles/nonabsdid-for-stata-users.html
+        - text: Cohort-by-time effect matrices
+          href: articles/cohort-matrix.html
     reference:
       text: Reference
       href: reference/index.html
@@ -63,6 +65,17 @@ reference:
     contents:
       - as_nabs_event_study
       - nabs_event_plot
+
+  - title: "Cohort matrix (experimental)"
+    desc: >
+      Keep the onset cohort as a second dimension and draw cohort-by-time
+      effect heatmaps. Supports DCDH and the fect family; PanelMatch is
+      intentionally omitted (see the article).
+    contents:
+      - nabs_effect_cells
+      - as_nabs_effect_cells
+      - plot_effect_matrix
+      - aggregate_effects
 
   - title: "Stata interoperability"
     desc: >

@@ -11,13 +11,13 @@ Source:
 [`inst/CITATION`](https://github.com/takuma1102/nonabsdid/blob/main/inst/CITATION)
 
 Iwasaki T (2026). *nonabsdid: Heterogeneity-Robust DID Event Studies
-with Non-Absorbing Binary Treatments*. R package version 0.3.2.9005,
+with Non-Absorbing Binary Treatments*. R package version 0.3.2.9006,
 <https://github.com/takuma1102/nonabsdid>.
 
     @Manual{,
       title = {{nonabsdid}: Heterogeneity-Robust DID Event Studies with Non-Absorbing Binary Treatments},
       author = {Takuma Iwasaki},
       year = {2026},
-      note = {R package version 0.3.2.9005},
+      note = {R package version 0.3.2.9006},
       url = {https://github.com/takuma1102/nonabsdid},
     }

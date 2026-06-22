@@ -38,7 +38,8 @@ test_that("nabs_event_plot includes the reference series when provided", {
 test_that("nabs_event_plot warns and fills in missing palette entries", {
   skip_if_not_installed("ggplot2")
   weird <- make_tbl("MyMethod", -1:1, c(0, 0, 0.5))
-  g <- expect_warning(nabs_event_plot(weird), "No palette entry")
+  expect_warning(nabs_event_plot(weird), "No palette entry")
+  g <- suppressWarnings(nabs_event_plot(weird))
   expect_s3_class(g, "ggplot")
 })
 

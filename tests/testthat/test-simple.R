@@ -24,7 +24,8 @@ test_that("auto_window passes user values straight through", {
 test_that("auto_window warns and falls back when no treated obs", {
   f <- get("auto_window", envir = asNamespace("nonabsdid"))
   d <- expand.grid(id = 1:5, t = 1:10); d$d <- 0L
-  out <- expect_warning(f(d, "d", "id", "t"), "No treated")
+  expect_warning(f(d, "d", "id", "t"), "No treated")
+  out <- suppressWarnings(f(d, "d", "id", "t"))
   expect_identical(out$lags,  6L)
   expect_identical(out$leads, 8L)
 })

@@ -43,7 +43,7 @@ correcting against.
 ## Installation
 
 > [!NOTE]
-> The version on CRAN might be outdated. Install from GitHub or R-universe for the latest version.
+> When the version on CRAN is outdated, install from GitHub or R-universe for the latest version.
 
 ```r
 # Development version from GitHub:

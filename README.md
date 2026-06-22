@@ -305,7 +305,7 @@ plot_effect_matrix(res_dcdh$cells, show_estimates = TRUE, show_se = TRUE)
 # plot_effect_matrix(res_dcdh$cells, res_ife$cells)
 ```
 
-This is **experimental** and currently supports **DCDH** and the **fect** family
+This currently supports **DCDH** and the **fect** family
 only. **PanelMatch is intentionally omitted**: a faithful cohort matrix needs
 per-cohort estimates *and* per-cohort SEs, and for PanelMatch that requires
 re-aggregating matched-set effects by switch time and re-running the matched-set
@@ -314,7 +314,7 @@ rather than shipped with incorrect standard errors. Compare methods as
 triangulation of the *pattern*, not as cell-by-cell equality (the estimators
 differ in estimand, controls, and coverage). See the
 [*Cohort-by-time effect matrices and heatmaps*](https://takuma1102.github.io/nonabsdid/articles/cohort-matrix.html)
-article for details.
+article for more details.
 
 ## Status
 

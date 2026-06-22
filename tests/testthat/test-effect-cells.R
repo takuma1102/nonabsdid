@@ -31,6 +31,16 @@ test_that("missing required columns is an error", {
                "event_time")
 })
 
+test_that("std.error is recovered from a symmetric CI when not supplied", {
+  # Mirrors the DCDH case: CI bounds present, point SE absent.
+  d <- data.frame(cohort = 4L, event_time = 0:2, estimate = c(0.2, 0.5, 0.4))
+  z <- stats::qnorm(0.975)
+  d$conf.low  <- d$estimate - z * 0.1
+  d$conf.high <- d$estimate + z * 0.1
+  cells <- as_nabs_effect_cells(d, method = "DCDH", outcome = "y")
+  expect_equal(cells$std.error, rep(0.1, 3), tolerance = 1e-8)
+})
+
 test_that("plot_effect_matrix returns a ggplot and auto-titles single method", {
   skip_if_not_installed("ggplot2")
   cells <- as_nabs_effect_cells(make_cell_df(), method = "FE")

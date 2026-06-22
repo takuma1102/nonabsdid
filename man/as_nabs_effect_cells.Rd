@@ -93,8 +93,9 @@ Building the cohort `by` variable and running DCDH for you is exactly what
 only when you already have a `by`-run object in hand.
 
 SEs are the estimator's own (`se_method = "native"`) when `Time`-level SEs
-are present in the plot data; otherwise CIs are carried through and the SE
-column is `NA`.
+are present in the plot data; otherwise they are recovered from the symmetric
+`LB.CI`/`UB.CI` bounds (`se_method = "ci"`), which is exact for DCDH's normal
+CIs, so `show_se` works either way.
 
 ## fect method
 

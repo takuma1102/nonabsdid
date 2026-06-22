@@ -161,7 +161,9 @@ run_dcdh_cells <- function(data, outcome, treatment, unit, time,
       calendar_time = as.integer(g) + es$time,
       method        = "DCDH",
       outcome       = outcome,
-      se_method     = ifelse(is.na(es$std.error), "none", "native"),
+      se_method     = ifelse(!is.na(es$std.error), "native",
+                             ifelse(!is.na(es$conf.low) & !is.na(es$conf.high),
+                                    "ci", "none")),
       conf.level    = conf.level
     )
   }

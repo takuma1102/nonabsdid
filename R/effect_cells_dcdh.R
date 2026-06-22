@@ -16,8 +16,9 @@
 #' only when you already have a `by`-run object in hand.
 #'
 #' SEs are the estimator's own (`se_method = "native"`) when `Time`-level SEs
-#' are present in the plot data; otherwise CIs are carried through and the SE
-#' column is `NA`.
+#' are present in the plot data; otherwise they are recovered from the symmetric
+#' `LB.CI`/`UB.CI` bounds (`se_method = "ci"`), which is exact for DCDH's normal
+#' CIs, so `show_se` works either way.
 #'
 #' @export
 as_nabs_effect_cells.did_multiplegt_dyn <- function(x, method = NULL,
@@ -35,6 +36,7 @@ as_nabs_effect_cells.did_multiplegt_dyn <- function(x, method = NULL,
   parts <- lapply(levels_found, function(lv) {
     pd <- lv$data
     has_se <- "SE" %in% names(pd)
+    has_ci <- all(c("LB.CI", "UB.CI") %in% names(pd))
     new_effect_cell_tbl(
       cohort        = rep(lv$cohort, nrow(pd)),
       event_time    = as.integer(pd$Time) - 1L,   # native ref at 0 -> ours at -1
@@ -45,7 +47,7 @@ as_nabs_effect_cells.did_multiplegt_dyn <- function(x, method = NULL,
       calendar_time = lv$cohort + (as.integer(pd$Time) - 1L),
       method        = method %||% "DCDH",
       outcome       = outcome,
-      se_method     = if (has_se) "native" else "none",
+      se_method     = if (has_se) "native" else if (has_ci) "ci" else "none",
       conf.level    = conf.level
     )
   })

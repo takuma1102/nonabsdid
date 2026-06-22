@@ -36,3 +36,23 @@ ggplot2::ggsave(
   width = 8, height = 4.2, dpi = 200, bg = "white"
 )
 message("wrote man/figures/README_cohort_matrix.png")
+
+# Combined DCDH x fect heatmap (faceted), if the DCDH backend is available.
+# Shows the per-method panels side by side: the dashed box marks fect's empty
+# pre-onset region, the caption notes why, and each panel is framed.
+if (requireNamespace("DIDmultiplegtDYN", quietly = TRUE) &&
+    requireNamespace("polars", quietly = TRUE)) {
+  res_dcdh <- nabs_effect_cells(
+    panel, outcome = "y", treatment = "d", unit = "id", time = "t",
+    method = "DCDH", lags = 4, leads = 6, dcdh_strategy = "loop"
+  )
+  p_combined <- plot_effect_matrix(res_dcdh$cells, res$cells,
+                                   show_estimates = TRUE, show_se = TRUE)
+  ggplot2::ggsave(
+    "man/figures/README_cohort_matrix_combined.png", p_combined,
+    width = 11, height = 4.6, dpi = 200, bg = "white"
+  )
+  message("wrote man/figures/README_cohort_matrix_combined.png")
+} else {
+  message("DIDmultiplegtDYN/polars not available; skipped combined heatmap")
+}

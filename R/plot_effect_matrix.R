@@ -28,8 +28,9 @@
 #'   strips name the methods). Pass a string to override, or `NA` to suppress.
 #' @param caption A short gloss of the axes printed under the plot. `NULL`
 #'   (default) auto-writes a one-line note (rows = onset cohort, columns =
-#'   time since onset / calendar time). Pass a string to override, or `NA` to
-#'   suppress.
+#'   time since onset / calendar time), and appends a note that fect has no
+#'   pre-onset cells whenever a fect-family panel is shown. Pass a string to
+#'   override, or `NA` to suppress.
 #' @param low,mid,high Diverging fill colours for negative / zero / positive
 #'   estimates.
 #' @param limits Optional length-2 numeric fill limits; `NULL` (default) makes
@@ -67,6 +68,7 @@ plot_effect_matrix <- function(...,
                                base_size = 11) {
   rlang::check_installed("ggplot2")
   axis <- match.arg(axis)
+  fect_family <- c("FE", "IFE", "MC")
 
   cells <- collect_effect_cells(list(...))
   if (!length(cells)) {
@@ -123,13 +125,18 @@ plot_effect_matrix <- function(...,
                                                margin = ggplot2::margin(t = 6)),
       strip.text       = ggplot2::element_text(face = "bold"),
       legend.position  = "right",
+      # A light frame round each panel makes the facet boundary explicit, so the
+      # empty zones read as "no estimate in this method's range" rather than gaps.
+      panel.border     = ggplot2::element_rect(color = "grey80", fill = NA,
+                                               linewidth = 0.4),
+      panel.spacing    = ggplot2::unit(1.2, "lines"),
       plot.margin      = ggplot2::margin(8, 10, 8, 8)
     )
 
   # Mark onset (event_time 0) for the relative-time view.
   if (axis == "event") {
-    p <- p + ggplot2::geom_vline(xintercept = -0.5, color = "grey40",
-                                 linetype = "dotted", linewidth = 0.4)
+    p <- p + ggplot2::geom_vline(xintercept = -0.5, color = "grey25",
+                                 linetype = "dashed", linewidth = 0.6)
   }
 
   if (isTRUE(show_estimates) || isTRUE(show_se)) {
@@ -182,6 +189,14 @@ plot_effect_matrix <- function(...,
       "Rows = onset cohort \u00b7 Columns = time since onset (0 = first treated period)"
     } else {
       "Rows = onset cohort \u00b7 Columns = calendar time"
+    }
+    # Fect has no pre-onset cells (counterfactuals are imputed for treated
+    # observations only); note it whenever a fect-family panel is shown.
+    if (length(intersect(unique(df$method), fect_family))) {
+      caption <- paste0(
+        caption,
+        "\nFect: no pre-onset cells \u2014 counterfactuals are imputed for treated periods only"
+      )
     }
   }
   if (length(caption) && !is.na(caption)) {

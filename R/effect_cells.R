@@ -116,7 +116,7 @@ as_nabs_effect_cells.data.frame <- function(x, method = NULL, outcome = NA_chara
 #   window         chr  "pre" if event_time < 0, else "post".
 #   method         chr  Estimator label.
 #   outcome        chr  Outcome variable name.
-#   se_method      chr  "bootstrap" / "native" / "none" -- how std.error was
+#   se_method      chr  "bootstrap" / "native" / "ci" / "none" -- how std.error was
 #                       produced; lets a future PanelMatch path slot in without
 #                       touching the plotting code.
 new_effect_cell_tbl <- function(cohort, event_time, estimate,
@@ -147,6 +147,15 @@ new_effect_cell_tbl <- function(cohort, event_time, estimate,
   if (any(derive)) {
     conf.low [derive] <- estimate[derive] - z * std.error[derive]
     conf.high[derive] <- estimate[derive] + z * std.error[derive]
+  }
+
+  # And the reverse: recover std.error from a symmetric CI when the estimator
+  # reports bounds but not a point SE (e.g. DCDH plot data carries LB.CI/UB.CI
+  # but no SE column). For symmetric-normal CIs this back-computes the exact SE,
+  # so show_se can display DCDH uncertainty too.
+  derive_se <- is.na(std.error) & !is.na(conf.low) & !is.na(conf.high)
+  if (any(derive_se)) {
+    std.error[derive_se] <- (conf.high[derive_se] - conf.low[derive_se]) / (2 * z)
   }
 
   out <- tibble::tibble(

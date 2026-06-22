@@ -53,8 +53,9 @@ strips name the methods). Pass a string to override, or `NA` to suppress.}
 
 \item{caption}{A short gloss of the axes printed under the plot. `NULL`
 (default) auto-writes a one-line note (rows = onset cohort, columns =
-time since onset / calendar time). Pass a string to override, or `NA` to
-suppress.}
+time since onset / calendar time), and appends a note that fect has no
+pre-onset cells whenever a fect-family panel is shown. Pass a string to
+override, or `NA` to suppress.}
 
 \item{low, mid, high}{Diverging fill colours for negative / zero / positive
 estimates.}

@@ -6,9 +6,13 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-`nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output plot is as follows.
+`nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output event-study plot is as follows.
 
 <img src="man/figures/README_example2_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE" />
+
+This package can also produce a cohort-by-time "effect matrix" output as a heatmap so that you can read an estimator's heterogeneity. It supports DCDH and fect (IFE/MC/FE).  
+
+<img src="man/figures/README_cohort_matrix_combined.png" alt="DCDH vs fect cohort effect matrix" width="90%" />
 
 It covers existing multiple estimators and runs analysis via their
 own packages, then puts their output on the same time axis, the same
@@ -39,7 +43,7 @@ correcting against.
 ## Installation
 
 > [!NOTE]
-> The version on CRAN is outdated. Install from GitHub or R-universe for the latest version.
+> The version on CRAN might be outdated. Install from GitHub or R-universe for the latest version.
 
 ```r
 # Development version from GitHub:
@@ -289,7 +293,7 @@ calendar) time, fill is the estimated effect. One method per plot reads best
 beneath each estimate.
 
 <img src="man/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%" />
-<img src="man/figures/cohort_matrix_dcdh.png" alt="Cohort-by-time effect matrix heatmap (DCDH estimator)" width="80%" />
+<img src="man/figures/README_cohort_matrix_dcdh.png" alt="Cohort-by-time effect matrix heatmap (DCDH estimator)" width="80%" />
 
 ```r
 res_ife  <- nabs_effect_cells(panel, outcome = "y", treatment = "d",

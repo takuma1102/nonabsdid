@@ -1,4 +1,4 @@
-# nonabsdid 0.3.2.9008
+# nonabsdid 0.4
 
 * Added a `pkgdown` website.
 * Followed `goodpractice`.

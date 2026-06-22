@@ -15,17 +15,17 @@ make_mock_placebo <- function() {
 test_that("PanelMatch tidier handles post-only case", {
   pe <- make_mock_pe()
   out <- as_nabs_event_study(pe)
-  expect_equal(out$time, c(0L, 1L, 2L))
+  expect_identical(out$time, c(0L, 1L, 2L))
   expect_equal(out$estimate, c(0.20, 0.40, 0.55))
-  expect_equal(unique(out$window), "post")
-  expect_equal(unique(out$method), "PanelMatch")
+  expect_identical(unique(out$window), "post")
+  expect_identical(unique(out$method), "PanelMatch")
 })
 
 test_that("PanelMatch tidier joins pre + post and inserts t = -1 reference", {
   pe <- make_mock_pe()
   pl <- make_mock_placebo()
   out <- as_nabs_event_study(pe, pre_obj = pl)
-  expect_equal(out$time, c(-3L, -2L, -1L, 0L, 1L, 2L))
+  expect_identical(out$time, c(-3L, -2L, -1L, 0L, 1L, 2L))
   # Reference row at -1 has estimate = 0 and zero CI width.
   ref <- out[out$time == -1L, ]
   expect_equal(ref$estimate,  0)
@@ -46,7 +46,7 @@ test_that("PanelMatch time-name parser accepts both 't+1' and 't1'", {
   pe <- structure(list(estimate = est, standard.error = se),
                   class = "PanelEstimate")
   out <- as_nabs_event_study(pe)
-  expect_equal(sort(out$time), c(-2L, 1L))
+  expect_identical(sort(out$time), c(-2L, 1L))
 })
 
 test_that("PanelMatch tidier errors when names cannot be parsed", {

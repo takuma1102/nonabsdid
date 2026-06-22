@@ -27,9 +27,9 @@ test_that("character unit id is coerced to an integer code column", {
 
   expect_false(identical(out$unit, "ori"))          # unit was renamed
   expect_true(out$unit %in% names(out$data))         # new column exists
-  expect_true(is.numeric(out$data[[out$unit]]))      # and is numeric
+  expect_type(out$data[[out$unit]], "integer")       # and is integer
   # Coercion only relabels: same number of distinct ids.
-  expect_equal(dplyr::n_distinct(out$data[[out$unit]]),
+  expect_identical(dplyr::n_distinct(out$data[[out$unit]]),
                dplyr::n_distinct(d$ori))
 })
 
@@ -39,7 +39,7 @@ test_that("string cluster is coerced, and a default cluster follows the unit", {
   # explicit string cluster
   out1 <- pf(d, outcome = "y", treatment = "d", unit = "ori", time = "year",
              cluster = "state", quiet = TRUE)
-  expect_true(is.numeric(out1$data[[out1$cluster]]))
+  expect_type(out1$data[[out1$cluster]], "integer")
   expect_false(identical(out1$cluster, "state"))
 
   # cluster defaulting to the (character) unit should follow the coerced unit
@@ -108,16 +108,16 @@ test_that("partial missingness is reported but not fatal", {
 })
 
 test_that("drop_nulls keeps only supplied values", {
-  expect_equal(dn(list(a = 1, b = NULL, c = 3)), list(a = 1, c = 3))
+  expect_identical(dn(list(a = 1, b = NULL, c = 3)), list(a = 1, c = 3))
   expect_length(dn(list(a = NULL, b = NULL)), 0L)
   # the knob pattern used by nabs_event_study(): parallel = FALSE is kept.
-  expect_equal(dn(list(cv = NULL, parallel = FALSE)), list(parallel = FALSE))
+  expect_identical(dn(list(cv = NULL, parallel = FALSE)), list(parallel = FALSE))
 })
 
 test_that("make_unique_name avoids collisions", {
-  expect_equal(mun("nabs_unit_id", c("a", "b")), "nabs_unit_id")
-  expect_equal(mun("nabs_unit_id", c("nabs_unit_id")), "nabs_unit_id_1")
-  expect_equal(mun("nabs_unit_id", c("nabs_unit_id", "nabs_unit_id_1")),
+  expect_identical(mun("nabs_unit_id", c("a", "b")), "nabs_unit_id")
+  expect_identical(mun("nabs_unit_id", "nabs_unit_id"), "nabs_unit_id_1")
+  expect_identical(mun("nabs_unit_id", c("nabs_unit_id", "nabs_unit_id_1")),
                "nabs_unit_id_2")
 })
 
@@ -126,6 +126,6 @@ test_that("with_local_seed is reproducible and restores global RNG state", {
   before <- .Random.seed
   a <- wls(123, sample(1:1e6, 3))
   b <- wls(123, sample(1:1e6, 3))
-  expect_equal(a, b)                       # same seed -> same draw
+  expect_identical(a, b)                       # same seed -> same draw
   expect_identical(.Random.seed, before)   # caller's RNG untouched
 })

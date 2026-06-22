@@ -11,9 +11,9 @@ test_that("even_breaks anchors on multiples of `by` and keeps 0 on the grid", {
 
 test_that("backtick_name quotes names and escapes embedded backticks", {
   f <- get("backtick_name", envir = asNamespace("nonabsdid"))
-  expect_equal(f("a b"), "`a b`")
-  expect_equal(f("x`y"), "`x``y`")
-  expect_equal(f(c("a", "b")), c("`a`", "`b`"))
+  expect_identical(f("a b"), "`a b`")
+  expect_identical(f("x`y"), "`x``y`")
+  expect_identical(f(c("a", "b")), c("`a`", "`b`"))
 })
 
 test_that("recycle_or_pad handles NULL, scalars, full vectors, and bad lengths", {
@@ -60,13 +60,13 @@ test_that("parse_panelmatch_times errors on empty / unnamed input", {
 
 test_that("fect_method_label maps known and unknown labels", {
   f <- get("fect_method_label", envir = asNamespace("nonabsdid"))
-  expect_equal(f("fe"), "FE")
-  expect_equal(f("ife"), "IFE")
-  expect_equal(f("mc"), "MC")
-  expect_equal(f("polynomial"), "Polynomial")
-  expect_equal(f(NULL), "IFE")
-  expect_equal(f(character(0)), "IFE")
-  expect_equal(f("something-new"), "IFE")
+  expect_identical(f("fe"), "FE")
+  expect_identical(f("ife"), "IFE")
+  expect_identical(f("mc"), "MC")
+  expect_identical(f("polynomial"), "Polynomial")
+  expect_identical(f(NULL), "IFE")
+  expect_identical(f(character(0)), "IFE")
+  expect_identical(f("something-new"), "IFE")
 })
 
 test_that("resolve_panel_data passes non-.dta inputs straight through", {

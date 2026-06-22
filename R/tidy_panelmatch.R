@@ -95,7 +95,7 @@ as_nabs_event_study.PanelEstimate <- function(x, method = NULL,
 
   out <- out[order(out$time), , drop = FALSE]
   class(out) <- c("nabs_event_study_tbl",
-                  class(out)[!class(out) %in% "nabs_event_study_tbl"])
+                  setdiff(class(out), "nabs_event_study_tbl"))
   attr(out, "conf.level") <- conf.level
   out
 }
@@ -109,7 +109,7 @@ parse_panelmatch_times <- function(nms) {
   cleaned <- sub("^t", "", nms)
   cleaned <- sub("^\\+", "", cleaned)
   out <- suppressWarnings(as.integer(cleaned))
-  if (any(is.na(out))) {
+  if (anyNA(out)) {
     cli::cli_abort(c(
       "Failed to parse relative-time labels from PanelMatch output.",
       "x" = "Names received: {.val {nms}}"

@@ -38,7 +38,7 @@ test_that("nabs_event_plot includes the reference series when provided", {
 test_that("nabs_event_plot warns and fills in missing palette entries", {
   skip_if_not_installed("ggplot2")
   weird <- make_tbl("MyMethod", -1:1, c(0, 0, 0.5))
-  expect_warning(g <- nabs_event_plot(weird), "No palette entry")
+  g <- expect_warning(nabs_event_plot(weird), "No palette entry")
   expect_s3_class(g, "ggplot")
 })
 
@@ -46,7 +46,7 @@ test_that("nabs_event_plot accepts a named-vector palette override", {
   skip_if_not_installed("ggplot2")
   weird <- make_tbl("Custom", -1:1, c(0, 0, 0.5))
   pal <- c("Custom_pre" = "#000000", "Custom_post" = "#FF0000")
-  expect_silent(g <- nabs_event_plot(weird, palette = pal))
+  g <- expect_silent(nabs_event_plot(weird, palette = pal))
   expect_s3_class(g, "ggplot")
 })
 
@@ -55,17 +55,19 @@ test_that("nabs_event_plot errors on no input", {
 })
 
 test_that("even_breaks gives even integer ticks with 0 on the grid", {
-  brks <- nonabsdid:::even_breaks(c(-4, 4), by = 2)
+  even_breaks <- get("even_breaks", envir = asNamespace("nonabsdid"))
+  brks <- even_breaks(c(-4, 4), by = 2)
   expect_equal(brks, c(-4, -2, 0, 2, 4))
   expect_true(all(brks %% 2 == 0))
   expect_true(0 %in% brks)
 })
 
 test_that("even_breaks respects the spacing argument and pads the range out", {
-  expect_equal(nonabsdid:::even_breaks(c(-6, 6), by = 3), c(-6, -3, 0, 3, 6))
+  even_breaks <- get("even_breaks", envir = asNamespace("nonabsdid"))
+  expect_equal(even_breaks(c(-6, 6), by = 3), c(-6, -3, 0, 3, 6))
   # A range whose ends aren't multiples of `by` is rounded outward, never in,
   # so the data window stays fully covered.
-  expect_equal(nonabsdid:::even_breaks(c(-5, 5), by = 2), c(-6, -4, -2, 0, 2, 4, 6))
+  expect_equal(even_breaks(c(-5, 5), by = 2), c(-6, -4, -2, 0, 2, 4, 6))
 })
 
 test_that("x_break_by is forwarded through nabs_event_study_simple via ...", {

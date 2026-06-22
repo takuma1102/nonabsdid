@@ -238,8 +238,7 @@ nabs_write_dta <- function(x, path, version = 14, label = NULL,
     cli::cli_inform(c(
       "Wrote {nrow(out)} row{?s} to {.file {path}} (Stata version {version}).",
       if (any(renamed)) {
-        c("i" = paste0("Renamed for Stata: ",
-                       paste(ren, collapse = ", "), "."))
+        c("i" = paste0("Renamed for Stata: ", toString(ren), "."))
       }
     ))
   }

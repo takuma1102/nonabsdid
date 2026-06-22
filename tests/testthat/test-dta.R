@@ -15,7 +15,7 @@ test_that("nabs_read_dta reads a plain .dta file", {
   out <- nabs_read_dta(tmp, verbose = FALSE)
   expect_s3_class(out, "data.frame")
   expect_named(out, c("id", "t", "d", "y"))
-  expect_equal(nrow(out), 24L)
+  expect_identical(nrow(out), 24L)
 })
 
 test_that("nabs_read_dta converts labelled columns to factor by default", {
@@ -96,16 +96,17 @@ test_that("nabs_write_dta returns the path invisibly", {
 
 test_that("resolve_panel_data dispatches .dta paths, passes frames through", {
   skip_if_not_installed("haven")
+  resolve_panel_data <- get("resolve_panel_data", envir = asNamespace("nonabsdid"))
   tmp <- withr::local_tempfile(fileext = ".dta")
   haven::write_dta(make_panel(), tmp)
 
   expect_message(
-    out <- nonabsdid:::resolve_panel_data(tmp),
+    out <- resolve_panel_data(tmp),
     "nabs_read_dta"
   )
   expect_s3_class(out, "data.frame")
-  expect_equal(nrow(out), 24L)
+  expect_identical(nrow(out), 24L)
 
   df <- make_panel()
-  expect_identical(nonabsdid:::resolve_panel_data(df), df)
+  expect_identical(resolve_panel_data(df), df)
 })

@@ -4,10 +4,15 @@
 
 no_have <- list(data = FALSE, unit = FALSE, lags = FALSE, leads = FALSE)
 
+translate_stata_dots <- get(
+  "translate_stata_dots",
+  envir = asNamespace("nonabsdid")
+)
+
 test_that("group/df/placebo/effects translate to canonical names", {
   dots <- list(group = "id", df = mtcars, placebo = 6, effects = 8,
                normalized = TRUE)
-  st <- suppressMessages(nonabsdid:::translate_stata_dots(dots, no_have))
+  st <- suppressMessages(translate_stata_dots(dots, no_have))
 
   expect_identical(st$values$unit, "id")
   expect_identical(st$values$data, mtcars)
@@ -20,11 +25,11 @@ test_that("group/df/placebo/effects translate to canonical names", {
 
 test_that("translation is announced, and quiet = TRUE silences it", {
   expect_message(
-    nonabsdid:::translate_stata_dots(list(group = "id"), no_have),
+    translate_stata_dots(list(group = "id"), no_have),
     "group"
   )
   expect_silent(
-    nonabsdid:::translate_stata_dots(list(group = "id"), no_have,
+    translate_stata_dots(list(group = "id"), no_have,
                                      quiet = TRUE)
   )
 })
@@ -32,33 +37,33 @@ test_that("translation is announced, and quiet = TRUE silences it", {
 test_that("supplying both canonical and alias errors", {
   have_unit <- modifyList(no_have, list(unit = TRUE))
   expect_error(
-    nonabsdid:::translate_stata_dots(list(group = "id"), have_unit),
+    translate_stata_dots(list(group = "id"), have_unit),
     "group"
   )
   have_leads <- modifyList(no_have, list(leads = TRUE))
   expect_error(
-    nonabsdid:::translate_stata_dots(list(effects = 8), have_leads),
+    translate_stata_dots(list(effects = 8), have_leads),
     "effects"
   )
 })
 
 test_that("invalid effects/placebo values error informatively", {
   expect_error(
-    nonabsdid:::translate_stata_dots(list(effects = 0), no_have),
+    translate_stata_dots(list(effects = 0), no_have),
     "effects"
   )
   expect_error(
-    nonabsdid:::translate_stata_dots(list(placebo = -1), no_have),
+    translate_stata_dots(list(placebo = -1), no_have),
     "placebo"
   )
   expect_error(
-    nonabsdid:::translate_stata_dots(list(effects = "eight"), no_have),
+    translate_stata_dots(list(effects = "eight"), no_have),
     "effects"
   )
 })
 
 test_that("empty dots pass through untouched, silently", {
-  expect_silent(st <- nonabsdid:::translate_stata_dots(list(), no_have))
+  st <- expect_silent(translate_stata_dots(list(), no_have))
   expect_length(st$values, 0L)
   expect_length(st$dots, 0L)
 })

@@ -73,7 +73,7 @@ test_that("PanelMatch accepts number.iterations", {
   if (inherits(res, "error")) {
     # It may fail on this small panel for reasons unrelated to the knob, but it
     # must not be because number.iterations was rejected as an unused argument.
-    expect_false(grepl("unused argument", conditionMessage(res)))
+    expect_false(grepl("unused argument", conditionMessage(res), fixed = TRUE))
     skip(paste("PanelMatch unavailable on test panel:", conditionMessage(res)))
   }
   expect_s3_class(res, "nabs_event_study_result")
@@ -83,22 +83,19 @@ test_that("simple() subsamples large panels and drops fits by default", {
   skip_if_not_installed("fect")
   d <- make_big_panel(n_units = 60)
   res <- NULL
-  ok  <- TRUE
   msgs <- tryCatch(
-    testthat::capture_messages(
+    testthat::capture_messages({
       res <- nabs_event_study_simple(
         d, outcome = "y", treatment = "d", unit = "id", time = "t",
         methods = "FE", include_twfe = FALSE,
         lags = 2, leads = 2,
         max_units = 30                      # force a subsample
       )
-    ),
+    }),
     error = function(e) {
-      ok <<- FALSE
-      conditionMessage(e)
+      skip(paste("fect FE unavailable on test panel:", conditionMessage(e)))
     }
   )
-  if (!ok) skip(paste("fect FE unavailable on test panel:", msgs))
 
   expect_match(paste(msgs, collapse = "\n"), "sample")
   expect_s3_class(res, "nabs_event_study_simple")
@@ -109,7 +106,7 @@ test_that("simple() subsamples large panels and drops fits by default", {
 test_that("simple() uses the cheap default method set", {
   # No estimator packages needed: just inspect the default formals.
   defs <- formals(nabs_event_study_simple)
-  expect_equal(eval(defs$methods), c("DCDH", "FE"))
+  expect_identical(eval(defs$methods), c("DCDH", "FE"))
   expect_false(eval(defs$keep_fits))
   expect_false(eval(defs$full))
 })

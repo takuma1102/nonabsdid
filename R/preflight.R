@@ -128,7 +128,7 @@ preflight_panel <- function(data, outcome, treatment, unit, time,
   }
   if (!ok) {
     shown_vec <- sort(unique(as.character(uvals)))
-    shown <- paste(utils::head(shown_vec, 5L), collapse = ", ")
+    shown <- toString(utils::head(shown_vec, 5L))
     if (length(shown_vec) > 5L) shown <- paste0(shown, ", ...")
     cli::cli_abort(c(
       "Treatment {.field {treatment}} must be a 0/1 (or FALSE/TRUE) indicator.",

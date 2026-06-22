@@ -64,7 +64,7 @@ test_that("as_nabs_event_study dispatches on result and simple objects", {
   )
   out_res <- as_nabs_event_study(res)
   expect_s3_class(out_res, "nabs_event_study_tbl")
-  expect_equal(unique(out_res$method), "DCDH")
+  expect_identical(unique(out_res$method), "DCDH")
 
   simp <- structure(
     list(plot = NULL, tidy = mk_tbl("IFE"), per_method = list(),
@@ -73,12 +73,12 @@ test_that("as_nabs_event_study dispatches on result and simple objects", {
   )
   out_simp <- as_nabs_event_study(simp, method = "Relabelled")
   expect_s3_class(out_simp, "nabs_event_study_tbl")
-  expect_equal(unique(out_simp$method), "Relabelled")
+  expect_identical(unique(out_simp$method), "Relabelled")
 })
 
 test_that("idempotent method relabels both method and outcome", {
   tbl <- mk_tbl("A")
   out <- as_nabs_event_study(tbl, method = "B", outcome = "z")
-  expect_equal(unique(out$method), "B")
-  expect_equal(unique(out$outcome), "z")
+  expect_identical(unique(out$method), "B")
+  expect_identical(unique(out$outcome), "z")
 })

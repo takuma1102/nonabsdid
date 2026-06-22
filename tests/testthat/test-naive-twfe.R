@@ -25,7 +25,7 @@ test_that("naive_twfe runs end-to-end and recovers level distributed-lag coefs",
                     unit = "id", time = "yr", lags = 4L, leads = 6L)
 
   expect_s3_class(out, "nabs_event_study_tbl")
-  expect_equal(unique(out$method), "TWFE")
+  expect_identical(unique(out$method), "TWFE")
   expect_equal(stats::nobs(attr(out, "fit")), nrow(d))
 
   e <- stats::setNames(out$estimate, out$time)
@@ -77,10 +77,10 @@ test_that("build_dl_design builds shifted treatment-level columns", {
   i1 <- des$id == 1
 
   # Column -> event-time map; event -1 (lead 1) is the omitted reference.
-  expect_equal(res$map[["nabs_dl_p0"]], 0L)
-  expect_equal(res$map[["nabs_dl_p1"]], 1L)
-  expect_equal(res$map[["nabs_dl_p2"]], 2L)
-  expect_equal(res$map[["nabs_dl_m2"]], -2L)
+  expect_identical(res$map[["nabs_dl_p0"]], 0L)
+  expect_identical(res$map[["nabs_dl_p1"]], 1L)
+  expect_identical(res$map[["nabs_dl_p2"]], 2L)
+  expect_identical(res$map[["nabs_dl_m2"]], -2L)
   expect_false("nabs_dl_m1" %in% names(res$map))
 
   # Each column is the treatment level shifted by its event time.

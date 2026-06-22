@@ -21,8 +21,8 @@ test_that("DCDH tidier extracts time, estimate, and CI", {
                       estimates = c(0.1, 0.0, 0.0, 0.4, 0.6, 0.7))
   out <- as_nabs_event_study(m, outcome = "y")
   expect_s3_class(out, "nabs_event_study_tbl")
-  expect_equal(out$method, rep("DCDH", 6))
-  expect_equal(out$time, c(-4L, -3L, -2L, -1L, 0L, 1L)) # DCDH package adopts a different reference period.
+  expect_identical(out$method, rep("DCDH", 6))
+  expect_identical(out$time, c(-4L, -3L, -2L, -1L, 0L, 1L)) # DCDH package adopts a different reference period.
   expect_equal(out$conf.low,  out$estimate - 1)
   expect_equal(out$conf.high, out$estimate + 1)
 })

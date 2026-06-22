@@ -7,24 +7,26 @@ test_that("auto_window picks sensible defaults from the panel", {
   d$d <- as.integer(d$id <= 25 & d$t >= 10)
 
   out <- f(d, treatment = "d", unit = "id", time = "t")
-  expect_true(out$lags  >= 2L && out$lags  <= 6L)
-  expect_true(out$leads >= 2L && out$leads <= 8L)
+  expect_true(out$lags  >= 2L)
+  expect_true(out$lags  <= 6L)
+  expect_true(out$leads >= 2L)
+  expect_true(out$leads <= 8L)
 })
 
 test_that("auto_window passes user values straight through", {
   f <- get("auto_window", envir = asNamespace("nonabsdid"))
   d <- expand.grid(id = 1:5, t = 1:10); d$d <- 0L
   out <- f(d, "d", "id", "t", user_lags = 4, user_leads = 6)
-  expect_equal(out$lags,  4L)
-  expect_equal(out$leads, 6L)
+  expect_identical(out$lags,  4L)
+  expect_identical(out$leads, 6L)
 })
 
 test_that("auto_window warns and falls back when no treated obs", {
   f <- get("auto_window", envir = asNamespace("nonabsdid"))
   d <- expand.grid(id = 1:5, t = 1:10); d$d <- 0L
-  expect_warning(out <- f(d, "d", "id", "t"), "No treated")
-  expect_equal(out$lags,  6L)
-  expect_equal(out$leads, 8L)
+  out <- expect_warning(f(d, "d", "id", "t"), "No treated")
+  expect_identical(out$lags,  6L)
+  expect_identical(out$leads, 8L)
 })
 
 test_that("nabs_event_study_simple validates inputs before running anything", {

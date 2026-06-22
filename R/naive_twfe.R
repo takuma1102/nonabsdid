@@ -80,12 +80,12 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
   check_character_scalar(time, "time")
 
   if (!is.null(controls)) {
-    if (!is.character(controls) || any(is.na(controls))) {
+    if (!is.character(controls) || anyNA(controls)) {
       cli::cli_abort("{.arg controls} must be `NULL` or a character vector.")
     }
   }
 
-  if (!is.character(cluster) || length(cluster) < 1L || any(is.na(cluster))) {
+  if (!is.character(cluster) || length(cluster) < 1L || anyNA(cluster)) {
     cli::cli_abort("{.arg cluster} must be a character vector of column names.")
   }
 
@@ -133,7 +133,7 @@ naive_twfe <- function(data, outcome, treatment, unit, time,
 
   trt_values <- unique(trt[!is.na(trt)])
 
-  if (length(trt_values) && any(!(as.numeric(trt_values) %in% c(0, 1)))) {
+  if (length(trt_values) && !all(as.numeric(trt_values) %in% c(0, 1))) {
     cli::cli_abort(
       "{.arg treatment} must be coded as 0/1, FALSE/TRUE, or contain missing values."
     )
@@ -328,22 +328,21 @@ build_dl_design <- function(data, treatment, unit, time, lags, leads) {
 
   map <- integer(0)
 
-  add_col <- function(cn, ev, col) {
+  # Event times to build, in the original order: post periods 0 .. leads
+  # first, then pre periods -2 .. -lags (event time -1 is the omitted
+  # reference). The shift offset equals the event time in both cases.
+  events <- c(0:leads, if (lags >= 2L) -(2:lags) else integer(0))
+
+  for (ev in events) {
+    col <- fetch_D(ev)
     if (any(col != 0)) {
-      d[[cn]] <<- col
-      map[cn] <<- ev
-    }
-  }
-
-  # Post periods (event times 0 .. leads): treatment lagged by h.
-  for (h in 0:leads) {
-    add_col(sprintf("nabs_dl_p%d", h), h, fetch_D(h))
-  }
-
-  # Pre periods (event times -2 .. -lags); -1 is the omitted reference.
-  if (lags >= 2L) {
-    for (h in 2:lags) {
-      add_col(sprintf("nabs_dl_m%d", h), -h, fetch_D(-h))
+      cn <- if (ev >= 0L) {
+        sprintf("nabs_dl_p%d", ev)
+      } else {
+        sprintf("nabs_dl_m%d", -ev)
+      }
+      d[[cn]]  <- col
+      map[cn]  <- ev
     }
   }
 

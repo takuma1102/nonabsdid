@@ -20,7 +20,7 @@ test_that("fixest tidier extracts event-study coefficients and inserts t = -1", 
 
   out <- as_nabs_event_study(m, outcome = "y")
   expect_s3_class(out, "nabs_event_study_tbl")
-  expect_equal(unique(out$method), "TWFE")          # default label
+  expect_identical(unique(out$method), "TWFE")          # default label
   expect_true(any(out$time == -1L))                 # reference inserted
   expect_equal(out$estimate[out$time == -1L], 0)
   expect_true(all(diff(out$time) > 0))              # ordered by time
@@ -37,7 +37,7 @@ test_that("fixest tidier respects an explicit method label", {
   m <- fixest::feols(y ~ i(time_to_event, ref = -1) | id + t, data = d)
 
   out <- as_nabs_event_study(m, method = "MyTWFE")
-  expect_equal(unique(out$method), "MyTWFE")
+  expect_identical(unique(out$method), "MyTWFE")
 })
 
 test_that("fixest tidier errors when there are no event-study coefficients", {

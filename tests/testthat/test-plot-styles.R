@@ -64,8 +64,8 @@ test_that("custom shapes are honoured under method_shape", {
 test_that("unknown method under method_shape warns but still draws (spare shapes)", {
   skip_if_not_installed("ggplot2")
   weird <- mk("Weird", times = -1:1, est = c(0, 0, 0.5))
-  expect_warning(
-    g <- nabs_event_plot(weird, style = "method_shape"),
+  g <- expect_warning(
+    nabs_event_plot(weird, style = "method_shape"),
     "No palette entry"
   )
   expect_s3_class(g, "ggplot")

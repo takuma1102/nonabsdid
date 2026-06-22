@@ -250,7 +250,7 @@ run_dcdh <- function(data, outcome, treatment, unit, time,
   extra_src <- ""
   if (length(dots)) {
     nm <- names(dots)
-    if (is.null(nm) || any(!nzchar(nm))) {
+    if (is.null(nm) || !all(nzchar(nm))) {
       cli::cli_abort("Extra arguments to DCDH must be named.")
     }
     for (k in seq_along(dots)) {

@@ -166,7 +166,8 @@ as_nabs_event_study.data.frame <- function(x, method = NULL, outcome = NA_charac
 #' @noRd
 bind_event_studies <- function(lst) {
   out <- dplyr::bind_rows(lst)
-  class(out) <- c("nabs_event_study_tbl", class(out)[!class(out) %in% "nabs_event_study_tbl"])
+  class(out) <- c("nabs_event_study_tbl",
+                  setdiff(class(out), "nabs_event_study_tbl"))
   out
 }
 

@@ -12,8 +12,7 @@
 #' the picture quickly*; for a careful, publication-ready result, switch
 #' to [nabs_event_study()] and tune options per estimator.
 #'
-#' @param data A panel data frame, or a path to a Stata `.dta` file (which
-#'   is read via [nabs_read_dta()] with default settings).
+#' @inheritParams nabs_event_study
 #' @param outcome,treatment,unit,time Character column names. The treatment
 #'   column should be a 0/1 indicator (it is allowed to switch back to 0,
 #'   i.e. non-absorbing).

@@ -10,7 +10,7 @@ test_that("data.frame method builds a valid nabs_event_study_tbl", {
   expect_named(out, c("time", "estimate", "std.error",
                       "conf.low", "conf.high",
                       "window", "method", "outcome"))
-  expect_equal(out$method, rep("TEST", 6))
+  expect_identical(out$method, rep("TEST", 6))
   expect_true(all(out$window[out$time < 0] == "pre"))
   expect_true(all(out$window[out$time >= 0] == "post"))
   # CIs derived from SE under normal approximation.
@@ -42,6 +42,6 @@ test_that("idempotent on nabs_event_study_tbl", {
   df <- data.frame(time = 0:1, estimate = c(1, 2), std.error = c(0.1, 0.1))
   t1 <- as_nabs_event_study(df, method = "A")
   t2 <- as_nabs_event_study(t1, method = "B")
-  expect_equal(t2$method, c("B", "B"))
+  expect_identical(t2$method, c("B", "B"))
   expect_s3_class(t2, "nabs_event_study_tbl")
 })

@@ -29,6 +29,22 @@ any combination of methods on a single ggplot2 panel.
 - [`nabs_event_plot()`](https://takuma1102.github.io/nonabsdid/reference/nabs_event_plot.md)
   : Plot one or more event-study tibbles on a single panel
 
+## Cohort matrix (experimental)
+
+Keep the onset cohort as a second dimension and draw cohort-by-time
+effect heatmaps. Supports DCDH and the fect family; PanelMatch is
+intentionally omitted (see the article).
+
+- [`nabs_effect_cells()`](https://takuma1102.github.io/nonabsdid/reference/nabs_effect_cells.md)
+  : Fit an estimator and return cohort-by-time effect cells
+- [`as_nabs_effect_cells()`](https://takuma1102.github.io/nonabsdid/reference/as_nabs_effect_cells.md)
+  : Coerce an estimator result to a tidy cohort-by-time effect-cell
+  tibble
+- [`plot_effect_matrix()`](https://takuma1102.github.io/nonabsdid/reference/plot_effect_matrix.md)
+  : Plot a cohort-by-time effect matrix as a heatmap
+- [`aggregate_effects()`](https://takuma1102.github.io/nonabsdid/reference/aggregate_effects.md)
+  : Collapse effect cells back onto an event-study path
+
 ## Stata interoperability
 
 Read panels from, and write tidy results back to, Stata `.dta` files.

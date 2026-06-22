@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nonabsdid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting started</a></li>
     <li><a class="dropdown-item" href="articles/nonabsdid-for-stata-users.html">nonabsdid for Stata users</a></li>
+    <li><a class="dropdown-item" href="articles/cohort-matrix.html">Cohort-by-time effect matrices</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -313,6 +314,25 @@
 <span><span class="co"># Write the tidy estimates back out for a Stata-using coauthor:</span></span>
 <span><span class="fu"><a href="reference/nabs_write_dta.html">nabs_write_dta</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">tidy</span>, <span class="st">"event_study_results.dta"</span><span class="op">)</span></span></code></pre></div>
 <p>See <code><a href="articles/nonabsdid-for-stata-users.html">vignette("nonabsdid-for-stata-users")</a></code> for the full option-by-option mapping from <code>did_multiplegt_dyn</code> and the round trip back to <code>twoway</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="cohort-matrix-experimental">Cohort matrix (experimental)<a class="anchor" aria-label="anchor" href="#cohort-matrix-experimental"></a>
+</h2>
+<p>The event-study workflow above collapses every cohort onto one relative-time axis. A separate, newer feature line keeps the <strong>onset cohort</strong> as a second dimension and draws it as a heatmap — rows are cohorts, columns are relative (or calendar) time, fill is the estimated effect. One method per plot reads best (the method becomes the title); <code>show_se = TRUE</code> prints the standard error beneath each estimate.</p>
+<p><img src="reference/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%"></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res_ife</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_effect_cells.html">nabs_effect_cells</a></span><span class="op">(</span><span class="va">panel</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>,</span>
+<span>                              unit <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>, method <span class="op">=</span> <span class="st">"IFE"</span><span class="op">)</span></span>
+<span><span class="va">res_dcdh</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_effect_cells.html">nabs_effect_cells</a></span><span class="op">(</span><span class="va">panel</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>,</span>
+<span>                              unit <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>, method <span class="op">=</span> <span class="st">"DCDH"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># individual heatmaps (recommended): auto-titled, estimates + SEs in each cell</span></span>
+<span><span class="fu"><a href="reference/plot_effect_matrix.html">plot_effect_matrix</a></span><span class="op">(</span><span class="va">res_ife</span><span class="op">$</span><span class="va">cells</span>,  show_estimates <span class="op">=</span> <span class="cn">TRUE</span>, show_se <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_effect_matrix.html">plot_effect_matrix</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">cells</span>, show_estimates <span class="op">=</span> <span class="cn">TRUE</span>, show_se <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># passing several methods facets them with a shared scale, but gets crowded:</span></span>
+<span><span class="co"># plot_effect_matrix(res_dcdh$cells, res_ife$cells)</span></span></code></pre></div>
+<p>This is <strong>experimental</strong> and currently supports <strong>DCDH</strong> and the <strong>fect</strong> family only. <strong>PanelMatch is intentionally omitted</strong>: a faithful cohort matrix needs per-cohort estimates <em>and</em> per-cohort SEs, and for PanelMatch that requires re-aggregating matched-set effects by switch time and re-running the matched-set bootstrap on that re-aggregation — out of scope for now, so it is left out rather than shipped with incorrect standard errors. Compare methods as triangulation of the <em>pattern</em>, not as cell-by-cell equality (the estimators differ in estimand, controls, and coverage). See the <a href="https://takuma1102.github.io/nonabsdid/articles/cohort-matrix.html"><em>Cohort-by-time effect matrices and heatmaps</em></a> article for details.</p>
 </div>
 <div class="section level2">
 <h2 id="status">Status<a class="anchor" aria-label="anchor" href="#status"></a>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nonabsdid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,6 +20,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
     <li><a class="dropdown-item" href="../articles/nonabsdid-for-stata-users.html">nonabsdid for Stata users</a></li>
+    <li><a class="dropdown-item" href="../articles/cohort-matrix.html">Cohort-by-time effect matrices</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -99,6 +100,43 @@
 
         </dt>
         <dd>Plot one or more event-study tibbles on a single panel</dd>
+      </dl></div><div class="section level2">
+      <h2 id="cohort-matrix-experimental-">Cohort matrix (experimental)<a class="anchor" aria-label="anchor" href="#cohort-matrix-experimental-"></a></h2>
+
+      <div class="section-desc"><p>Keep the onset cohort as a second dimension and draw cohort-by-time effect heatmaps. Supports DCDH and the fect family; PanelMatch is intentionally omitted (see the article).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nabs_effect_cells.html">nabs_effect_cells()</a></code>
+
+        </dt>
+        <dd>Fit an estimator and return cohort-by-time effect cells</dd>
+
+        <dt>
+
+          <code><a href="as_nabs_effect_cells.html">as_nabs_effect_cells()</a></code>
+
+        </dt>
+        <dd>Coerce an estimator result to a tidy cohort-by-time effect-cell tibble</dd>
+
+        <dt>
+
+          <code><a href="plot_effect_matrix.html">plot_effect_matrix()</a></code>
+
+        </dt>
+        <dd>Plot a cohort-by-time effect matrix as a heatmap</dd>
+
+        <dt>
+
+          <code><a href="aggregate_effects.html">aggregate_effects()</a></code>
+
+        </dt>
+        <dd>Collapse effect cells back onto an event-study path</dd>
       </dl></div><div class="section level2">
       <h2 id="stata-interoperability">Stata interoperability<a class="anchor" aria-label="anchor" href="#stata-interoperability"></a></h2>
 

@@ -3,14 +3,18 @@
 <url><loc>https://takuma1102.github.io/nonabsdid/CODE_OF_CONDUCT.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/CONTRIBUTING.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/LICENSE-text.html</loc></url>
+<url><loc>https://takuma1102.github.io/nonabsdid/articles/cohort-matrix.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/articles/getting-started.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/articles/index.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/articles/nonabsdid-for-stata-users.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/authors.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/index.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/news/index.html</loc></url>
+<url><loc>https://takuma1102.github.io/nonabsdid/reference/aggregate_effects.html</loc></url>
+<url><loc>https://takuma1102.github.io/nonabsdid/reference/as_nabs_effect_cells.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/as_nabs_event_study.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/index.html</loc></url>
+<url><loc>https://takuma1102.github.io/nonabsdid/reference/nabs_effect_cells.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/nabs_event_plot.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/nabs_event_study.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/nabs_event_study_simple.html</loc></url>
@@ -18,5 +22,6 @@
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/nabs_write_dta.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/naive_twfe.html</loc></url>
 <url><loc>https://takuma1102.github.io/nonabsdid/reference/nonabsdid-package.html</loc></url>
+<url><loc>https://takuma1102.github.io/nonabsdid/reference/plot_effect_matrix.html</loc></url>
 </urlset>
 

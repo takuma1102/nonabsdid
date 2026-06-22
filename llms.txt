@@ -4,10 +4,17 @@
 heterogeneity-robust staggered DID event-study estimates under
 ***non-absorbing*** binary treatment, where treatment status may switch
 on and off over time, including treatment reversals. Its example output
-plot is as follows.
+event-study plot is as follows.
 
 ![Comparison of heterogeneity-robust estimators vs naive
 TWFE](reference/figures/README_example2_plot_method_shape.png)
+
+This package can also produce a cohort-by-time “effect matrix” output as
+a heatmap so that you can read an estimator’s heterogeneity. It supports
+DCDH and fect (IFE/MC/FE).
+
+![DCDH vs fect cohort effect
+matrix](reference/figures/README_cohort_matrix_combined.png)
 
 It covers existing multiple estimators and runs analysis via their own
 packages, then puts their output on the same time axis, the same tidy
@@ -43,8 +50,8 @@ are correcting against.
 
 ## Installation
 
-> \[!NOTE\] The version on CRAN is outdated. Install from GitHub or
-> R-universe for the latest version.
+> \[!NOTE\] The version on CRAN might be outdated. Install from GitHub
+> or R-universe for the latest version.
 
 ``` r
 
@@ -330,7 +337,7 @@ One method per plot reads best (the method becomes the title);
 ![Cohort-by-time effect matrix heatmap (IFE
 estimator)](reference/figures/README_cohort_matrix.png)![Cohort-by-time
 effect matrix heatmap (DCDH
-estimator)](reference/figures/cohort_matrix_dcdh.png)
+estimator)](reference/figures/README_cohort_matrix_dcdh.png)
 
 ``` r
 

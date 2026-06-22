@@ -5,10 +5,9 @@
 library(nonabsdid)
 ```
 
-> **Experimental.** This is a separate, newer feature line from the
-> event-study workflow in *Getting started*. The schema and function
-> names may still change. It supports **DCDH** and the **fect** family
-> only; see [Why not PanelMatch?](#why-not-panelmatch) below.
+> This is a separate feature line from the event-study workflow in
+> *Getting started*. It supports **DCDH** and the **fect** family only;
+> see [Why not PanelMatch?](#why-not-panelmatch) below.
 
 ## Event study vs. effect matrix
 
@@ -175,9 +174,9 @@ quantities:
 
 The fill encodes the point estimate only. Standard errors live in the
 `std.error` column and can be drawn in each tile with `show_se = TRUE`
-(`"bootstrap"` for fect, `"native"` for DCDH; see the schema below). For
-claims about whether two cells differ, look at those SEs rather than the
-colours.
+(`"bootstrap"` for fect, `"native"` or CI-recovered `"ci"` for DCDH; see
+the schema below). For claims about whether two cells differ, look at
+those SEs rather than the colours.
 
 ## Working from existing objects
 
@@ -232,19 +231,19 @@ nabs_event_plot(agg, xlim = c(0, 6))
 [`as_nabs_effect_cells()`](https://takuma1102.github.io/nonabsdid/reference/as_nabs_effect_cells.md)
 returns a tibble of class `nabs_effect_cell_tbl`:
 
-| column          | type | description                                           |
-|-----------------|------|-------------------------------------------------------|
-| `cohort`        | int  | Onset calendar period (first treated period).         |
-| `event_time`    | int  | Relative period; `0` = onset.                         |
-| `calendar_time` | int  | `cohort + event_time` (may be `NA`).                  |
-| `estimate`      | num  | Cell point estimate.                                  |
-| `std.error`     | num  | Standard error (may be `NA`).                         |
-| `conf.low/high` | num  | CI bounds.                                            |
-| `n`             | int  | Treated cells aggregated (fect only; `NA` for DCDH).  |
-| `window`        | chr  | `"pre"` / `"post"`.                                   |
-| `method`        | chr  | Estimator label.                                      |
-| `outcome`       | chr  | Outcome name.                                         |
-| `se_method`     | chr  | `"bootstrap"` (fect), `"native"` (DCDH), or `"none"`. |
+| column | type | description |
+|----|----|----|
+| `cohort` | int | Onset calendar period (first treated period). |
+| `event_time` | int | Relative period; `0` = onset. |
+| `calendar_time` | int | `cohort + event_time` (may be `NA`). |
+| `estimate` | num | Cell point estimate. |
+| `std.error` | num | Standard error (may be `NA`). |
+| `conf.low/high` | num | CI bounds. |
+| `n` | int | Treated cells aggregated (fect only; `NA` for DCDH). |
+| `window` | chr | `"pre"` / `"post"`. |
+| `method` | chr | Estimator label. |
+| `outcome` | chr | Outcome name. |
+| `se_method` | chr | `"bootstrap"` (fect), `"native"`/`"ci"` (DCDH), or `"none"`. |
 
 The `se_method` column records how uncertainty was produced. fect cells
 use the bootstrap surface (`imputed_outcomes(replicates = TRUE)`),

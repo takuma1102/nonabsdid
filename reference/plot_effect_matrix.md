@@ -77,8 +77,9 @@ plot_effect_matrix(
 
   A short gloss of the axes printed under the plot. \`NULL\` (default)
   auto-writes a one-line note (rows = onset cohort, columns = time since
-  onset / calendar time). Pass a string to override, or \`NA\` to
-  suppress.
+  onset / calendar time), and appends a note that fect has no pre-onset
+  cells whenever a fect-family panel is shown. Pass a string to
+  override, or \`NA\` to suppress.
 
 - low, mid, high:
 

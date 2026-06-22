@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nonabsdid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,8 +63,10 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><code>nonabsdid</code> is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins><strong>non-absorbing</strong></ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output plot is as follows.</p>
+<p><code>nonabsdid</code> is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins><strong>non-absorbing</strong></ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output event-study plot is as follows.</p>
 <p><img src="reference/figures/README_example2_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
+<p>This package can also produce a cohort-by-time “effect matrix” output as a heatmap so that you can read an estimator’s heterogeneity. It supports DCDH and fect (IFE/MC/FE).</p>
+<p><img src="reference/figures/README_cohort_matrix_combined.png" alt="DCDH vs fect cohort effect matrix" width="90%"></p>
 <p>It covers existing multiple estimators and runs analysis via their own packages, then puts their output on the same time axis, the same tidy schema, and the same <code>ggplot2</code> panel so you can compare them at a glance.</p>
 <p>Supported estimators:</p>
 <ul>
@@ -96,7 +98,7 @@
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <blockquote>
-<p>[!NOTE] The version on CRAN is outdated. Install from GitHub or R-universe for the latest version.</p>
+<p>[!NOTE] The version on CRAN might be outdated. Install from GitHub or R-universe for the latest version.</p>
 </blockquote>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Development version from GitHub:</span></span>
@@ -319,7 +321,7 @@
 <h2 id="cohort-matrix">Cohort matrix<a class="anchor" aria-label="anchor" href="#cohort-matrix"></a>
 </h2>
 <p>The event-study workflow above collapses every cohort onto one relative-time axis. A separate feature line keeps the <strong>onset cohort</strong> as a second dimension and draws it as a heatmap — rows are cohorts, columns are relative (or calendar) time, fill is the estimated effect. One method per plot reads best (the method becomes the title); <code>show_se = TRUE</code> prints the standard error beneath each estimate.</p>
-<p><img src="reference/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%"><img src="reference/figures/cohort_matrix_dcdh.png" alt="Cohort-by-time effect matrix heatmap (DCDH estimator)" width="80%"></p>
+<p><img src="reference/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%"><img src="reference/figures/README_cohort_matrix_dcdh.png" alt="Cohort-by-time effect matrix heatmap (DCDH estimator)" width="80%"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res_ife</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_effect_cells.html">nabs_effect_cells</a></span><span class="op">(</span><span class="va">panel</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>,</span>
 <span>                              unit <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>, method <span class="op">=</span> <span class="st">"IFE"</span><span class="op">)</span></span>

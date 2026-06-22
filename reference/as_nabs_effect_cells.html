@@ -19,7 +19,7 @@ visible."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">nonabsdid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -160,8 +160,9 @@ at `event_time = 0` (the same `-1` shift the event-study tidier applies).</p>
 [nabs_effect_cells()] with `method = "DCDH"` does; call the generic directly
 only when you already have a `by`-run object in hand.</p>
 <p>SEs are the estimator's own (`se_method = "native"`) when `Time`-level SEs
-are present in the plot data; otherwise CIs are carried through and the SE
-column is `NA`.</p>
+are present in the plot data; otherwise they are recovered from the symmetric
+`LB.CI`/`UB.CI` bounds (`se_method = "ci"`), which is exact for DCDH's normal
+CIs, so `show_se` works either way.</p>
 <p>## fect method</p>
 <p>Uses `fect::imputed_outcomes()` (fect &gt;= 2.4.0), the documented long-form
 accessor that returns one row per treated cell with columns `id`, `time`,

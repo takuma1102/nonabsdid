@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nonabsdid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,10 +73,10 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/takuma1102/nonabsdid" class="external-link">nonabsdid</a></span><span class="op">)</span></span></code></pre></div>
 <blockquote>
-<p><strong>Experimental.</strong> This is a separate, newer feature line
-from the event-study workflow in <em>Getting started</em>. The schema
-and function names may still change. It supports <strong>DCDH</strong>
-and the <strong>fect</strong> family only; see <a href="#why-not-panelmatch">Why not PanelMatch?</a> below.</p>
+<p>This is a separate feature line from the event-study workflow in
+<em>Getting started</em>. It supports <strong>DCDH</strong> and the
+<strong>fect</strong> family only; see <a href="#why-not-panelmatch">Why
+not PanelMatch?</a> below.</p>
 </blockquote>
 <div class="section level2">
 <h2 id="event-study-vs--effect-matrix">Event study vs. effect matrix<a class="anchor" aria-label="anchor" href="#event-study-vs--effect-matrix"></a>
@@ -234,8 +234,9 @@ carryover differently, so those cells are the least comparable.</li>
 <p>The fill encodes the point estimate only. Standard errors live in the
 <code>std.error</code> column and can be drawn in each tile with
 <code>show_se = TRUE</code> (<code>"bootstrap"</code> for fect,
-<code>"native"</code> for DCDH; see the schema below). For claims about
-whether two cells differ, look at those SEs rather than the colours.</p>
+<code>"native"</code> or CI-recovered <code>"ci"</code> for DCDH; see
+the schema below). For claims about whether two cells differ, look at
+those SEs rather than the colours.</p>
 </div>
 <div class="section level2">
 <h2 id="working-from-existing-objects">Working from existing objects<a class="anchor" aria-label="anchor" href="#working-from-existing-objects"></a>
@@ -349,7 +350,8 @@ event study is the cohort-collapsed view of the same cells.
 <td><code>se_method</code></td>
 <td>chr</td>
 <td>
-<code>"bootstrap"</code> (fect), <code>"native"</code> (DCDH), or
+<code>"bootstrap"</code> (fect),
+<code>"native"</code>/<code>"ci"</code> (DCDH), or
 <code>"none"</code>.</td>
 </tr>
 </tbody>

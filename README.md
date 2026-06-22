@@ -279,16 +279,17 @@ nabs_write_dta(res$tidy, "event_study_results.dta")
 See `vignette("nonabsdid-for-stata-users")` for the full option-by-option
 mapping from `did_multiplegt_dyn` and the round trip back to `twoway`.
 
-## Cohort matrix (experimental)
+## Cohort matrix
 
 The event-study workflow above collapses every cohort onto one relative-time
-axis. A separate, newer feature line keeps the **onset cohort** as a second
+axis. A separate feature line keeps the **onset cohort** as a second
 dimension and draws it as a heatmap — rows are cohorts, columns are relative (or
 calendar) time, fill is the estimated effect. One method per plot reads best
 (the method becomes the title); `show_se = TRUE` prints the standard error
 beneath each estimate.
 
 <img src="man/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%" />
+<img src="man/figures/cohort_matrix_dcdh.png" alt="Cohort-by-time effect matrix heatmap (DCDH estimator)" width="80%" />
 
 ```r
 res_ife  <- nabs_effect_cells(panel, outcome = "y", treatment = "d",

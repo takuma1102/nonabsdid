@@ -12,7 +12,7 @@
 
 This package can also produce a cohort-by-time "effect matrix" output as a heatmap so that you can read an estimator's heterogeneity. It supports DCDH and fect (IFE/MC/FE).  
 
-<img src="man/figures/README_cohort_matrix_combined.png" alt="DCDH vs fect cohort effect matrix" width="90%" />
+<img src="man/figures/README_cohort_matrix_combined.png" alt="DCDH vs fect cohort effect matrix" />
 
 It covers existing multiple estimators and runs analysis via their
 own packages, then puts their output on the same time axis, the same

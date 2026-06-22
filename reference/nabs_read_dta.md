@@ -111,7 +111,7 @@ if (requireNamespace("haven", quietly = TRUE)) {
   mydata <- nabs_read_dta(tmp)
   head(mydata)
 }
-#> Read /tmp/Rtmp0KP8NX/file1e9976cd284d.dta: 6 rows, 4 columns.
+#> Read /tmp/RtmprmPagt/file1eaa445e5e5.dta: 6 rows, 4 columns.
 #> # A tibble: 6 × 4
 #>      id     t     d      y
 #>   <dbl> <dbl> <dbl>  <dbl>

@@ -14,11 +14,11 @@ This package can also produce a cohort-by-time "effect matrix" output as a heatm
 
 <img src="man/figures/README_cohort_matrix_combined.png" alt="DCDH vs fect cohort effect matrix" />
 
-It covers existing multiple estimators and runs analysis via their
+## Supported estimators
+
+This package covers existing multiple estimators below and runs analysis via their
 own packages, then puts their output on the same time axis, the same
 tidy schema, and the same `ggplot2` panel so you can compare them at a glance.
-
-Supported estimators:
 
 - **DCDH** — de Chaisemartin & D'Haultfoeuille, via [`DIDmultiplegtDYN`](https://cran.r-project.org/package=DIDmultiplegtDYN).
 - **PanelMatch** — Imai, Kim, & Wang, via [`PanelMatch`](https://cran.r-project.org/package=PanelMatch).

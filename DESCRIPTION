@@ -2,6 +2,7 @@ Package: nonabsdid
 Type: Package
 Title: Visualize Heterogeneity-Robust Event Studies for Non-Absorbing Treatments
 Version: 0.4.0
+Date: June 22, 2026
 Authors@R: c(
     person(given = "Takuma",
            family = "Iwasaki",

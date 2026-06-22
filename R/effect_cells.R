@@ -138,6 +138,8 @@ new_effect_cell_tbl <- function(cohort, event_time, estimate,
   conf.high     <- recycle_or_pad(conf.high, k)
   calendar_time <- recycle_or_pad(calendar_time, k)
   n             <- recycle_or_pad(n, k)
+  need_ct <- is.na(calendar_time) & !is.na(cohort) & !is.na(event_time)
+  if (any(need_ct)) calendar_time[need_ct] <- cohort[need_ct] + event_time[need_ct]
 
   # Derive CI from SE under normality where bounds are missing.
   z <- stats::qnorm(1 - (1 - conf.level) / 2)

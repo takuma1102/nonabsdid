@@ -67,8 +67,10 @@
 <p><img src="reference/figures/README_example2_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
 <p>This package can also produce a cohort-by-time “effect matrix” output as a heatmap so that you can read an estimator’s heterogeneity. It supports DCDH and fect (IFE/MC/FE).</p>
 <p><img src="reference/figures/README_cohort_matrix_combined.png" alt="DCDH vs fect cohort effect matrix"></p>
-<p>It covers existing multiple estimators and runs analysis via their own packages, then puts their output on the same time axis, the same tidy schema, and the same <code>ggplot2</code> panel so you can compare them at a glance.</p>
-<p>Supported estimators:</p>
+<div class="section level2">
+<h2 id="supported-estimators">Supported estimators<a class="anchor" aria-label="anchor" href="#supported-estimators"></a>
+</h2>
+<p>This package covers existing multiple estimators below and runs analysis via their own packages, then puts their output on the same time axis, the same tidy schema, and the same <code>ggplot2</code> panel so you can compare them at a glance.</p>
 <ul>
 <li>
 <strong>DCDH</strong> — de Chaisemartin &amp; D’Haultfoeuille, via <a href="https://cran.r-project.org/package=DIDmultiplegtDYN" class="external-link"><code>DIDmultiplegtDYN</code></a>.</li>
@@ -94,6 +96,7 @@
 <span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://community.r-multiverse.org"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </blockquote>
 <p>Plus an optional <strong>naive TWFE reference series</strong> (via <code>fixest</code>) drawn in a neutral color so you can see what the heterogeneity-robust estimators are correcting against.</p>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>

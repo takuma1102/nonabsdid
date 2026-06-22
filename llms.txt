@@ -16,12 +16,12 @@ DCDH and fect (IFE/MC/FE).
 ![DCDH vs fect cohort effect
 matrix](reference/figures/README_cohort_matrix_combined.png)
 
-It covers existing multiple estimators and runs analysis via their own
-packages, then puts their output on the same time axis, the same tidy
-schema, and the same `ggplot2` panel so you can compare them at a
-glance.
+## Supported estimators
 
-Supported estimators:
+This package covers existing multiple estimators below and runs analysis
+via their own packages, then puts their output on the same time axis,
+the same tidy schema, and the same `ggplot2` panel so you can compare
+them at a glance.
 
 - **DCDH** — de Chaisemartin & D’Haultfoeuille, via
   [`DIDmultiplegtDYN`](https://cran.r-project.org/package=DIDmultiplegtDYN).

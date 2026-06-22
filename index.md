@@ -9,8 +9,6 @@ plot is as follows.
 ![Comparison of heterogeneity-robust estimators vs naive
 TWFE](reference/figures/README_example2_plot_method_shape.png)
 
-Comparison of heterogeneity-robust estimators vs naive TWFE
-
 It covers existing multiple estimators and runs analysis via their own
 packages, then puts their output on the same time axis, the same tidy
 schema, and the same `ggplot2` panel so you can compare them at a
@@ -172,8 +170,6 @@ with separate shades for pre- and post-treatment periods:
 ![Comparison of heterogeneity-robust estimators vs naive
 TWFE](reference/figures/README_example_plot.png)
 
-Comparison of heterogeneity-robust estimators vs naive TWFE
-
 ``` r
 
 nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref)
@@ -185,8 +181,6 @@ pre, filled triangles for post). This reads cleanly in grayscale:
 
 ![Comparison of heterogeneity-robust estimators vs naive
 TWFE](reference/figures/README_example_plot_method_shape.png)
-
-Comparison of heterogeneity-robust estimators vs naive TWFE
 
 ``` r
 
@@ -200,8 +194,6 @@ post are connected, including across the treatment boundary):
 
 ![Comparison of heterogeneity-robust estimators vs naive
 TWFE](reference/figures/README_example_plot_method_shape_connect.png)
-
-Comparison of heterogeneity-robust estimators vs naive TWFE
 
 ``` r
 

@@ -63,9 +63,7 @@
 <!-- badges: start -->
 
 <p><code>nonabsdid</code> is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins><strong>non-absorbing</strong></ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output plot is as follows.</p>
-<div class="float">
-<img src="reference/figures/README_example2_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"><div class="figcaption">Comparison of heterogeneity-robust estimators vs naive TWFE</div>
-</div>
+<p><img src="reference/figures/README_example2_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
 <p>It covers existing multiple estimators and runs analysis via their own packages, then puts their output on the same time axis, the same tidy schema, and the same <code>ggplot2</code> panel so you can compare them at a glance.</p>
 <p>Supported estimators:</p>
 <ul>
@@ -181,22 +179,16 @@
 </h2>
 <p><code><a href="reference/nabs_event_plot.html">nabs_event_plot()</a></code> offers two ways to encode the pre/post distinction, plus an option to join point estimates with a thin line. Both arguments also flow through <code><a href="reference/nabs_event_study_simple.html">nabs_event_study_simple()</a></code> via <code>...</code>.</p>
 <p>By default (<code>style = "prepost_color"</code>), each method gets its own color with separate shades for pre- and post-treatment periods:</p>
-<div class="float">
-<img src="reference/figures/README_example_plot.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"><div class="figcaption">Comparison of heterogeneity-robust estimators vs naive TWFE</div>
-</div>
+<p><img src="reference/figures/README_example_plot.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/nabs_event_plot.html">nabs_event_plot</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_pm</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_ife</span><span class="op">$</span><span class="va">tidy</span>, reference <span class="op">=</span> <span class="va">ref</span><span class="op">)</span></span></code></pre></div>
 <p>With <code>style = "method_shape"</code>, color encodes the <em>method</em> only, and the pre/post distinction is carried by the marker shape (hollow circles for pre, filled triangles for post). This reads cleanly in grayscale:</p>
-<div class="float">
-<img src="reference/figures/README_example_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"><div class="figcaption">Comparison of heterogeneity-robust estimators vs naive TWFE</div>
-</div>
+<p><img src="reference/figures/README_example_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/nabs_event_plot.html">nabs_event_plot</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_pm</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_ife</span><span class="op">$</span><span class="va">tidy</span>, reference <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>                style <span class="op">=</span> <span class="st">"method_shape"</span><span class="op">)</span></span></code></pre></div>
 <p>Set <code>connect = TRUE</code> (works with either style) to join each series’ point estimates with a thin line, drawn through the full path (pre and post are connected, including across the treatment boundary):</p>
-<div class="float">
-<img src="reference/figures/README_example_plot_method_shape_connect.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"><div class="figcaption">Comparison of heterogeneity-robust estimators vs naive TWFE</div>
-</div>
+<p><img src="reference/figures/README_example_plot_method_shape_connect.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/nabs_event_plot.html">nabs_event_plot</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_pm</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_ife</span><span class="op">$</span><span class="va">tidy</span>, reference <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>                style <span class="op">=</span> <span class="st">"method_shape"</span>, connect <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>

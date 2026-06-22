@@ -318,17 +318,19 @@ See
 for the full option-by-option mapping from `did_multiplegt_dyn` and the
 round trip back to `twoway`.
 
-## Cohort matrix (experimental)
+## Cohort matrix
 
 The event-study workflow above collapses every cohort onto one
-relative-time axis. A separate, newer feature line keeps the **onset
-cohort** as a second dimension and draws it as a heatmap — rows are
-cohorts, columns are relative (or calendar) time, fill is the estimated
-effect. One method per plot reads best (the method becomes the title);
+relative-time axis. A separate feature line keeps the **onset cohort**
+as a second dimension and draws it as a heatmap — rows are cohorts,
+columns are relative (or calendar) time, fill is the estimated effect.
+One method per plot reads best (the method becomes the title);
 `show_se = TRUE` prints the standard error beneath each estimate.
 
 ![Cohort-by-time effect matrix heatmap (IFE
-estimator)](reference/figures/README_cohort_matrix.png)
+estimator)](reference/figures/README_cohort_matrix.png)![Cohort-by-time
+effect matrix heatmap (DCDH
+estimator)](reference/figures/cohort_matrix_dcdh.png)
 
 ``` r
 

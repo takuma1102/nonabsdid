@@ -8,7 +8,7 @@
 
 `nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output plot is as follows.
 
-![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example2_plot_method_shape.png)
+<img src="man/figures/README_example2_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE" />
 
 It covers existing multiple estimators and runs analysis via their
 own packages, then puts their output on the same time axis, the same
@@ -151,7 +151,7 @@ through `nabs_event_study_simple()` via `...`.
 By default (`style = "prepost_color"`), each method gets its own color with
 separate shades for pre- and post-treatment periods:
 
-![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example_plot.png)
+<img src="man/figures/README_example_plot.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE" />
 
 
 ```r
@@ -162,7 +162,7 @@ With `style = "method_shape"`, color encodes the *method* only, and the
 pre/post distinction is carried by the marker shape (hollow circles for pre,
 filled triangles for post). This reads cleanly in grayscale:
 
-![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example_plot_method_shape.png)
+<img src="man/figures/README_example_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE" />
 
 
 ```r
@@ -174,8 +174,7 @@ Set `connect = TRUE` (works with either style) to join each series' point
 estimates with a thin line, drawn through the full path (pre and post are
 connected, including across the treatment boundary):
 
-![Comparison of heterogeneity-robust estimators vs naive TWFE](man/figures/README_example_plot_method_shape_connect.png)
-
+<img src="man/figures/README_example_plot_method_shape_connect.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE" />
 
 ```r
 nabs_event_plot(res_dcdh$tidy, res_pm$tidy, res_ife$tidy, reference = ref,

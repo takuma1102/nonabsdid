@@ -77,7 +77,7 @@ if (requireNamespace("haven", quietly = TRUE)) {
 
   haven::read_dta(tmp)
 }
-#> Wrote 6 rows to /tmp/RtmphrDHl8/file1eae7141fea8.dta (Stata version 14).
+#> Wrote 6 rows to /tmp/RtmpRDOxzb/file1eab145c37b6.dta (Stata version 14).
 #> ℹ Renamed for Stata: std.error -> std_error, conf.low -> conf_low, conf.high ->
 #>   conf_high.
 #> # A tibble: 6 × 8

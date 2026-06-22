@@ -78,7 +78,7 @@ panel$y <- 0.2 * panel$t + 0.5 * panel$d + rnorm(nrow(panel))
 haven::write_dta(panel, tmp)
 
 mydata <- nabs_read_dta(tmp)
-#> Read /tmp/RtmpMUoY2S/file25e43c96895.dta: 600 rows, 4 columns.
+#> Read /tmp/RtmpkPNuEI/file25c9339d64f3.dta: 600 rows, 4 columns.
 head(mydata)
 #> # A tibble: 6 × 4
 #>      id     t     d      y

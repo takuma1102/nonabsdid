@@ -5,9 +5,9 @@
 library(nonabsdid)
 ```
 
-> This is a separate feature line from the event-study workflow in
-> *Getting started*. It supports **DCDH** and the **fect** family only;
-> see [Why not PanelMatch?](#why-not-panelmatch) below.
+This is a separate feature line from the event-study workflow in
+*Getting started*. It supports **DCDH** and the **fect** family only;
+see [Why not PanelMatch?](#why-not-panelmatch) below.
 
 ## Event study vs. effect matrix
 

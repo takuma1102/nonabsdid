@@ -50,5 +50,8 @@
 utils::globalVariables(c(
   "time", "estimate", "std.error", "conf.low", "conf.high",
   "window", "method", "outcome", "Time", "Estimate", "LB.CI", "UB.CI",
-  "ymin", "ymax"
+  "ymin", "ymax",
+  # effect-cell (cohort matrix) feature
+  "cohort", "event_time", "calendar_time", "se_method", "n",
+  "xval", "cohort_f", "lab", "txt_col", "eff", "W.agg", "replicate"
 ))

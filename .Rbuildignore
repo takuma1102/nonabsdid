@@ -11,3 +11,7 @@
 ^\.lintr$
 ^man/figures/\.gitkeep$
 ^CRAN-SUBMISSION$
+^doc$
+^Meta$
+^test_cohort_matrix\.R$
+^cohort_matrix_.*\.png$

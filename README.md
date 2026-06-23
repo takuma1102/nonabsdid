@@ -42,15 +42,14 @@ correcting against.
 
 ## Installation
 
-Install the released version from CRAN:
+Install the released version from CRAN: [![CRAN status](https://www.r-pkg.org/badges/version/nonabsdid)](https://CRAN.R-project.org/package=nonabsdid)
 
 ```r
 install.packages("nonabsdid")
 ```
-[![CRAN status](https://www.r-pkg.org/badges/version/nonabsdid)](https://CRAN.R-project.org/package=nonabsdid)
 
 > [!NOTE]
-> When the version on CRAN is outdated, install from GitHub or R-universe for the latest version.
+> When the version on CRAN is not the latest, install from GitHub or R-universe for the latest version.
 
 ```r
 # Development version from GitHub:

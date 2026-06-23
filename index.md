@@ -50,6 +50,16 @@ are correcting against.
 
 ## Installation
 
+Install the released version from CRAN:
+
+``` r
+
+install.packages("nonabsdid")
+```
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/nonabsdid)](https://CRAN.R-project.org/package=nonabsdid)
+
 > \[!NOTE\] When the version on CRAN is outdated, install from GitHub or
 > R-universe for the latest version.
 
@@ -59,8 +69,6 @@ are correcting against.
 # install.packages("pak")
 pak::pak("takuma1102/nonabsdid")
 ```
-
-You can install this package through r-universe.
 
 ``` r
 

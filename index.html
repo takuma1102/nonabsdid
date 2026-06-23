@@ -100,15 +100,18 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p>Install the released version from CRAN:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"nonabsdid"</span><span class="op">)</span></span></code></pre></div>
+<p><a href="https://CRAN.R-project.org/package=nonabsdid" class="external-link"><img src="https://www.r-pkg.org/badges/version/nonabsdid" alt="CRAN status"></a></p>
 <blockquote>
 <p>[!NOTE] When the version on CRAN is outdated, install from GitHub or R-universe for the latest version.</p>
 </blockquote>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Development version from GitHub:</span></span>
 <span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"takuma1102/nonabsdid"</span><span class="op">)</span></span></code></pre></div>
-<p>You can install this package through r-universe.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
 <span>  <span class="st">"nonabsdid"</span>,</span>
 <span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://takuma1102.r-universe.dev"</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"repos"</span><span class="op">)</span><span class="op">)</span></span>
@@ -119,7 +122,7 @@
 <h2 id="first-pass-exploratory-analysis">First-pass exploratory analysis<a class="anchor" aria-label="anchor" href="#first-pass-exploratory-analysis"></a>
 </h2>
 <p>At the early stage of an analysis, use <code><a href="reference/nabs_event_study_simple.html">nabs_event_study_simple()</a></code> to get an initial sense of how the event-study estimates look. By default it runs a deliberately cheap pass — DCDH plus two-way-FE imputation (<code>c("DCDH", "FE")</code>) and a naive TWFE reference — and on large panels it works on a random sample of units so the first look stays fast. The result is a single overlay plot to inspect before moving on to estimator-specific tuning.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/takuma1102/nonabsdid" class="external-link">nonabsdid</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_event_study_simple.html">nabs_event_study_simple</a></span><span class="op">(</span></span>
@@ -135,7 +138,7 @@
 <span><span class="va">res</span><span class="op">$</span><span class="va">per_method</span> <span class="co"># per-method tidy tibbles</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">fits</span>       <span class="co"># native estimator objects (only kept with keep_fits = TRUE)</span></span></code></pre></div>
 <p>Add the heavier estimators once the cheap pass looks reasonable — they are opt-in because PanelMatch’s bootstrap and IFE/MC’s cross-validation are slow on large panels:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_event_study_simple.html">nabs_event_study_simple</a></span><span class="op">(</span></span>
 <span>  <span class="va">mydata</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>, unit <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>,</span>
 <span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"DCDH"</span>, <span class="st">"PanelMatch"</span>, <span class="st">"IFE"</span>, <span class="st">"FE"</span>, <span class="st">"MC"</span><span class="op">)</span>,</span>
@@ -147,7 +150,7 @@
 <h2 id="careful-runs">Careful runs<a class="anchor" aria-label="anchor" href="#careful-runs"></a>
 </h2>
 <p>For publication-ready work, switch to the full wrapper or to the underlying packages directly. The unified wrapper:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res_dcdh</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_event_study.html">nabs_event_study</a></span><span class="op">(</span><span class="va">mydata</span>,</span>
 <span>                             outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>,</span>
 <span>                             unit <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>,</span>
@@ -160,7 +163,7 @@
 <span><span class="va">res_fe</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_event_study.html">nabs_event_study</a></span><span class="op">(</span><span class="va">mydata</span>, <span class="va">...</span>, method <span class="op">=</span> <span class="st">"FE"</span><span class="op">)</span></span>
 <span><span class="va">res_mc</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_event_study.html">nabs_event_study</a></span><span class="op">(</span><span class="va">mydata</span>, <span class="va">...</span>, method <span class="op">=</span> <span class="st">"MC"</span><span class="op">)</span></span></code></pre></div>
 <p>Or call estimators directly and tidy their output:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">DIDmultiplegtDYN</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/DIDmultiplegtDYN/man/did_multiplegt_dyn.html" class="external-link">did_multiplegt_dyn</a></span><span class="op">(</span></span>
 <span>  df <span class="op">=</span> <span class="va">mydata</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, group <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>,</span>
 <span>  treatment <span class="op">=</span> <span class="st">"d"</span>, effects <span class="op">=</span> <span class="fl">9</span>, placebo <span class="op">=</span> <span class="fl">6</span></span>
@@ -186,16 +189,16 @@
 <p><code><a href="reference/nabs_event_plot.html">nabs_event_plot()</a></code> offers two ways to encode the pre/post distinction, plus an option to join point estimates with a thin line. Both arguments also flow through <code><a href="reference/nabs_event_study_simple.html">nabs_event_study_simple()</a></code> via <code>...</code>.</p>
 <p>By default (<code>style = "prepost_color"</code>), each method gets its own color with separate shades for pre- and post-treatment periods:</p>
 <p><img src="reference/figures/README_example_plot.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/nabs_event_plot.html">nabs_event_plot</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_pm</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_ife</span><span class="op">$</span><span class="va">tidy</span>, reference <span class="op">=</span> <span class="va">ref</span><span class="op">)</span></span></code></pre></div>
 <p>With <code>style = "method_shape"</code>, color encodes the <em>method</em> only, and the pre/post distinction is carried by the marker shape (hollow circles for pre, filled triangles for post). This reads cleanly in grayscale:</p>
 <p><img src="reference/figures/README_example_plot_method_shape.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/nabs_event_plot.html">nabs_event_plot</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_pm</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_ife</span><span class="op">$</span><span class="va">tidy</span>, reference <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>                style <span class="op">=</span> <span class="st">"method_shape"</span><span class="op">)</span></span></code></pre></div>
 <p>Set <code>connect = TRUE</code> (works with either style) to join each series’ point estimates with a thin line, drawn through the full path (pre and post are connected, including across the treatment boundary):</p>
 <p><img src="reference/figures/README_example_plot_method_shape_connect.png" alt="Comparison of heterogeneity-robust estimators vs naive TWFE"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/nabs_event_plot.html">nabs_event_plot</a></span><span class="op">(</span><span class="va">res_dcdh</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_pm</span><span class="op">$</span><span class="va">tidy</span>, <span class="va">res_ife</span><span class="op">$</span><span class="va">tidy</span>, reference <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>                style <span class="op">=</span> <span class="st">"method_shape"</span>, connect <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -203,7 +206,7 @@
 <h2 id="working-from-existing-results">Working from existing results<a class="anchor" aria-label="anchor" href="#working-from-existing-results"></a>
 </h2>
 <p>If you have already run supported estimators, you can convert their result objects into the common <code>nabs_event_study_tbl</code> schema with <code><a href="reference/as_nabs_event_study.html">as_nabs_event_study()</a></code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tidy_one</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_nabs_event_study.html">as_nabs_event_study</a></span><span class="op">(</span><span class="va">fit_dcdh</span>, outcome <span class="op">=</span> <span class="st">"y"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">tidy_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_nabs_event_study.html">as_nabs_event_study</a></span><span class="op">(</span></span>
@@ -211,7 +214,7 @@
 <span>  outcome <span class="op">=</span> <span class="st">"y"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Results returned by <code><a href="reference/nabs_event_study.html">nabs_event_study()</a></code> and <code><a href="reference/nabs_event_study_simple.html">nabs_event_study_simple()</a></code> can also be passed back to <code><a href="reference/as_nabs_event_study.html">as_nabs_event_study()</a></code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_event_study.html">nabs_event_study</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span><span class="va">tidy_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_nabs_event_study.html">as_nabs_event_study</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span></span>
@@ -302,7 +305,7 @@
 <h2 id="for-stata-users">For Stata users<a class="anchor" aria-label="anchor" href="#for-stata-users"></a>
 </h2>
 <p><code>nonabsdid</code> ships Stata interoperability:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read a .dta directly (labelled columns and .a-.z missings handled),</span></span>
 <span><span class="co"># or just pass the path straight to the wrappers:</span></span>
 <span><span class="va">mydata</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_read_dta.html">nabs_read_dta</a></span><span class="op">(</span><span class="st">"mypanel.dta"</span><span class="op">)</span></span>
@@ -325,7 +328,7 @@
 </h2>
 <p>The event-study workflow above collapses every cohort onto one relative-time axis. A separate feature line keeps the <strong>onset cohort</strong> as a second dimension and draws it as a heatmap — rows are cohorts, columns are relative (or calendar) time, fill is the estimated effect. One method per plot reads best (the method becomes the title); <code>show_se = TRUE</code> prints the standard error beneath each estimate.</p>
 <p><img src="reference/figures/README_cohort_matrix.png" alt="Cohort-by-time effect matrix heatmap (IFE estimator)" width="80%"><img src="reference/figures/README_cohort_matrix_dcdh.png" alt="Cohort-by-time effect matrix heatmap (DCDH estimator)" width="80%"></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res_ife</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_effect_cells.html">nabs_effect_cells</a></span><span class="op">(</span><span class="va">panel</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>,</span>
 <span>                              unit <span class="op">=</span> <span class="st">"id"</span>, time <span class="op">=</span> <span class="st">"t"</span>, method <span class="op">=</span> <span class="st">"IFE"</span><span class="op">)</span></span>
 <span><span class="va">res_dcdh</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/nabs_effect_cells.html">nabs_effect_cells</a></span><span class="op">(</span><span class="va">panel</span>, outcome <span class="op">=</span> <span class="st">"y"</span>, treatment <span class="op">=</span> <span class="st">"d"</span>,</span>

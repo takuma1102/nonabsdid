@@ -50,8 +50,7 @@ are correcting against.
 
 ## Installation
 
-Install the released version from CRAN: [![CRAN
-status](https://www.r-pkg.org/badges/version/nonabsdid)](https://CRAN.R-project.org/package=nonabsdid)
+Install the released version from CRAN:
 
 ``` r
 

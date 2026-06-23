@@ -1,4 +1,4 @@
-# nonabsdid 0.4.0
+# nonabsdid 0.4.1
 
 * Sped up PanelMatch and the fect family (IFE / MC) on large panels.
 * Made estimators more robust on large, real-world panels.

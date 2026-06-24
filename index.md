@@ -1,4 +1,4 @@
-# *nonabsdid*: Visualize Heterogeneity-Robust DID Event Studies with Non-Absorbing Binary Treatments
+# *nonabsdid*: Visualize Heterogeneity-Robust DID Event Studies and Effect Matrix Heatmap with Non-Absorbing Binary Treatments
 
 `nonabsdid` is an R package for visualizing and comparing
 heterogeneity-robust staggered DID event-study estimates under

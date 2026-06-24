@@ -1,4 +1,4 @@
-# *nonabsdid*: Visualize Heterogeneity-Robust DID Event Studies and Effect Matrix Heatmap with Non-Absorbing Binary Treatments
+# *nonabsdid*: Visualize Heterogeneity-Robust DID Event Studies and Cohort Matrix Heatmap with Non-Absorbing Binary Treatments
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/takuma1102/nonabsdid/actions/workflows/R-CMD-check.yaml)

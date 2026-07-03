@@ -6,6 +6,7 @@
 [![CRAN status](https://www.r-pkg.org/badges/version/nonabsdid)](https://CRAN.R-project.org/package=nonabsdid)
 [![r-universe version](https://takuma1102.r-universe.dev/nonabsdid/badges/version)](https://takuma1102.r-universe.dev/nonabsdid)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 <!-- badges: end -->
 
 `nonabsdid` is an R package for visualizing and comparing heterogeneity-robust staggered DID event-study estimates under <ins>**non-absorbing**</ins> binary treatment, where treatment status may switch on and off over time, including treatment reversals. Its example output event-study plot is as follows.

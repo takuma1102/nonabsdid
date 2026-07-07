@@ -15,7 +15,7 @@ jobs:
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
-          - {os: windows-latest, r: '4.5.1'}
+          - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,  r: 'devel'}
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
@@ -31,8 +31,10 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-          extra-repositories: 'https://rpolars.r-universe.dev'
+          extra-repositories: 'https://community.r-multiverse.org'
       - uses: r-lib/actions/setup-r-dependencies@v2
+        env:
+          NOT_CRAN: "true"
         with:
           extra-packages: any::rcmdcheck
           needs: check

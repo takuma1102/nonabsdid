@@ -1,0 +1,53 @@
+diff --git a/.github/workflows/R-CMD-check.yaml b/.github/workflows/R-CMD-check.yaml
+index d6ff45c..08a4c53 100644
+--- a/.github/workflows/R-CMD-check.yaml
++++ b/.github/workflows/R-CMD-check.yaml
+@@ -15,7 +15,7 @@ jobs:
+       matrix:
+         config:
+           - {os: macos-latest,   r: 'release'}
+-          - {os: windows-latest, r: '4.5.1'}
++          - {os: windows-latest, r: 'release'}
+           - {os: ubuntu-latest,  r: 'devel'}
+           - {os: ubuntu-latest,  r: 'release'}
+           - {os: ubuntu-latest,  r: 'oldrel-1'}
+@@ -31,8 +31,10 @@ jobs:
+           r-version: ${{ matrix.config.r }}
+           http-user-agent: ${{ matrix.config.http-user-agent }}
+           use-public-rspm: true
+-          extra-repositories: 'https://rpolars.r-universe.dev'
++          extra-repositories: 'https://community.r-multiverse.org'
+       - uses: r-lib/actions/setup-r-dependencies@v2
++        env:
++          NOT_CRAN: "true"
+         with:
+           extra-packages: any::rcmdcheck
+           needs: check
+diff --git a/.github/workflows/pkgdown.yaml b/.github/workflows/pkgdown.yaml
+index 6289aa3..f87060c 100644
+--- a/.github/workflows/pkgdown.yaml
++++ b/.github/workflows/pkgdown.yaml
+@@ -30,9 +30,11 @@ jobs:
+       - uses: r-lib/actions/setup-r@v2
+         with:
+           use-public-rspm: true
+-          extra-repositories: 'https://rpolars.r-universe.dev'
++          extra-repositories: 'https://community.r-multiverse.org'
+ 
+       - uses: r-lib/actions/setup-r-dependencies@v2
++        env:
++          NOT_CRAN: "true"
+         with:
+           extra-packages: any::pkgdown, local::.
+           needs: website
+diff --git a/DESCRIPTION b/DESCRIPTION
+index f644c9e..02c735d 100644
+--- a/DESCRIPTION
++++ b/DESCRIPTION
+@@ -57,5 +57,5 @@ Config/testthat/edition: 3
+ URL: https://github.com/takuma1102/nonabsdid, https://takuma1102.github.io/nonabsdid/
+ BugReports: https://github.com/takuma1102/nonabsdid/issues
+ VignetteBuilder: knitr
+-Additional_repositories: https://rpolars.r-universe.dev
++Additional_repositories: https://community.r-multiverse.org
+ Config/roxygen2/version: 8.0.0
